@@ -5,6 +5,7 @@ import psycopg
 from psycopg.rows import dict_row
 from psycopg import sql
 from datetime import datetime
+from pathlib import Path
 
 app = Flask(__name__, static_folder='static')
 CORS(app, resources={
@@ -84,7 +85,7 @@ def init_database():
         count = cur.fetchone()['count']
         
         if count == 0:
-            # Insérer les candidats par défaut
+            # Insérer les candidats par défaut avec noms de fichiers simples
             cur.execute("""
                 INSERT INTO candidates (id, nom, categorie, img) VALUES
                 ('miss1', 'LOVE NDAZOO', 'miss', 'miss_1.jpg'),
@@ -460,6 +461,68 @@ def debug_info():
         }
     }), 200
 
+@app.route('/api/debug/files', methods=['GET'])
+def debug_files():
+    """Débogage des fichiers et dossiers"""
+    base_dir = Path(__file__).parent.absolute()
+    
+    result = {
+        'current_dir': str(base_dir),
+        'files_in_root': [],
+        'static_dir_exists': False,
+        'static_dir_contents': [],
+        'photo_dir_exists': False,
+        'photo_dir_contents': []
+    }
+    
+    # Lister les fichiers à la racine
+    try:
+        for item in os.listdir(base_dir):
+            item_path = base_dir / item
+            result['files_in_root'].append({
+                'name': item,
+                'is_dir': item_path.is_dir(),
+                'size': item_path.stat().st_size if item_path.is_file() else 0
+            })
+    except Exception as e:
+        result['error_root'] = str(e)
+    
+    # Vérifier le dossier static
+    static_dir = base_dir / 'static'
+    result['static_dir_path'] = str(static_dir)
+    result['static_dir_exists'] = static_dir.exists()
+    
+    if static_dir.exists():
+        try:
+            for item in os.listdir(static_dir):
+                item_path = static_dir / item
+                result['static_dir_contents'].append({
+                    'name': item,
+                    'is_dir': item_path.is_dir(),
+                    'size': item_path.stat().st_size if item_path.is_file() else 0
+                })
+        except Exception as e:
+            result['error_static'] = str(e)
+    
+    # Vérifier le dossier photo dans static
+    photo_dir = static_dir / 'photo'
+    result['photo_dir_path'] = str(photo_dir)
+    result['photo_dir_exists'] = photo_dir.exists()
+    
+    if photo_dir.exists():
+        try:
+            for item in os.listdir(photo_dir):
+                item_path = photo_dir / item
+                result['photo_dir_contents'].append({
+                    'name': item,
+                    'size': item_path.stat().st_size if item_path.is_file() else 0,
+                    'is_image': item.lower().endswith(('.jpg', '.jpeg', '.png', '.gif'))
+                })
+        except Exception as e:
+            result['error_photo'] = str(e)
+    
+    return jsonify(result)
+
 # ========== ROUTES POUR LE FRONTEND ET LES IMAGES ==========
 @app.route('/')
 def serve_index():
@@ -469,18 +532,41 @@ def serve_index():
 def serve_static(path):
     return send_from_directory('static', path)
 
-@app.route('/Photo/<path:filename>')
+# ROUTE POUR LES IMAGES - CORRIGÉE
+@app.route('/static/photo/<path:filename>')
 def serve_image(filename):
-    """Servir les images du dossier Photo"""
+    """Servir les images du dossier static/photo"""
     try:
-        return send_from_directory('Photo', filename)
-    except:
-        return jsonify({'error': 'Image non trouvée'}), 404
+        # Vérifier si le fichier existe
+        file_path = Path(app.static_folder) / 'photo' / filename
+        if file_path.exists():
+            print(f"✅ Image trouvée: {filename}")
+            return send_from_directory('static/photo', filename)
+        else:
+            print(f"❌ Image non trouvée: {filename}")
+            return jsonify({'error': f'Image {filename} non trouvée dans static/photo'}), 404
+    except Exception as e:
+        print(f"❌ Erreur serveur image: {e}")
+        return jsonify({'error': str(e)}), 500
 
 # ========== DÉMARRAGE DE L'APPLICATION ==========
 if __name__ == '__main__':
     print("🚀 Démarrage de l'application Miss & Mister...")
     print(f"📁 Dossier static: {app.static_folder}")
+    
+    # Vérifier la structure
+    print("📂 Vérification de la structure des dossiers...")
+    base_dir = Path(__file__).parent.absolute()
+    static_dir = base_dir / 'static'
+    photo_dir = static_dir / 'photo'
+    
+    print(f"📁 Base dir: {base_dir}")
+    print(f"📁 Static dir: {static_dir} - Existe: {static_dir.exists()}")
+    print(f"📁 Photo dir: {photo_dir} - Existe: {photo_dir.exists()}")
+    
+    if photo_dir.exists():
+        images = [f for f in os.listdir(photo_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png', '.gif'))]
+        print(f"📸 Images trouvées ({len(images)}): {images}")
     
     # Initialiser la base au démarrage
     try:
@@ -498,3 +584,4 @@ else:
         init_database()
     except Exception as e:
         print(f"⚠️ Note: {e}")
+        
