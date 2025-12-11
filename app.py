@@ -15,28 +15,21 @@ CORS(app, resources={
 })
 
 # ========== CONFIGURATION SÉCURISÉE ==========
-# NE JAMAIS mettre les mots de passe en dur dans le code !
 DB_CONFIG = {
-    'host': os.getenv('DB_HOST'),  # Pas de valeur par défaut
-    'database': os.getenv('DB_NAME'),
-    'user': os.getenv('DB_USER'),
-    'password': os.getenv('DB_PASSWORD'),  # Doit être dans les variables d'environnement
-    'port': os.getenv('DB_PORT'),
+    'host': os.getenv('DB_HOST', 'dpg-d4tf1uchg0os73ct4gi0-a.oregon-postgres.render.com'),
+    'dbname': os.getenv('DB_NAME', 'election_k6jj'),
+    'user': os.getenv('DB_USER', 'election_user'),
+    'password': os.getenv('DB_PASSWORD', 'uIvD4UaRMcqngNl3Re643KySUFvhnRF0'),
+    'port': os.getenv('DB_PORT', '5432'),
     'sslmode': 'require'
 }
 
 # ========== FONCTION D'INITIALISATION DE LA BASE ==========
 def init_database():
-    """Initialise la base de données si les variables d'environnement sont configurées"""
+    """Initialise la base de données"""
     
-    # Vérifier que toutes les variables d'environnement sont définies
-    required_vars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_PORT']
-    missing_vars = [var for var in required_vars if not os.getenv(var)]
-    
-    if missing_vars:
-        print(f"⚠️ Variables d'environnement manquantes: {missing_vars}")
-        print("L'initialisation de la base de données est ignorée.")
-        return
+    print("🔧 Tentative d'initialisation de la base de données...")
+    print(f"📊 Configuration utilisée: host={DB_CONFIG['host']}, dbname={DB_CONFIG['dbname']}")
     
     try:
         conn = psycopg.connect(**DB_CONFIG, row_factory=dict_row)
@@ -94,15 +87,22 @@ def init_database():
         count = cur.fetchone()['count']
         
         if count == 0:
-            # Insérer les candidats par défaut
+            # Insérer les candidats par défaut - CORRIGÉ : utiliser 'mister' au lieu de 'mass'
             cur.execute("""
                 INSERT INTO candidates (id, nom, categorie, img) VALUES
-                ('miss1', 'Fatou Diop', 'miss', 'Photo/miss1.jpg'),
-                ('miss2', 'Aïcha Sow', 'miss', 'Photo/miss2.jpg'),
-                ('miss3', 'Mariam Diallo', 'miss', 'Photo/miss3.jpg'),
-                ('mister1', 'Mamadou Fall', 'mister', 'Photo/mister1.jpg'),
-                ('mister2', 'Ibrahima Ndiaye', 'mister', 'Photo/mister2.jpg'),
-                ('mister3', 'Abdoulaye Diop', 'mister', 'Photo/mister3.jpg')
+                ('miss1', 'LOVE NDAZOO', 'miss', 'Photo/miss_1.jpg'),
+                ('miss2', 'KERENA KENNE', 'miss', 'Photo/miss_2.jpg'),
+                ('miss3', 'DIVINE ZEKENG', 'miss', 'Photo/miss_3.jpg'),
+                ('miss4', 'HILARY TCHEUNDEM', 'miss', 'Photo/miss_4.jpg'),
+                ('miss5', 'ANUARITE DOUNANG', 'miss', 'Photo/miss_5.jpg'),
+                ('mister1', 'ULYSSE ZELEF', 'mister', 'Photo/mass_1.jpg'),
+                ('mister2', 'DOMINIQUE MBOAPFOURI', 'mister', 'Photo/mass_2.jpg'),
+                ('mister3', 'ULRICH MBAKONG', 'mister', 'Photo/mass_3.jpg'),
+                ('mister4', 'JORDAN BIAS', 'mister', 'Photo/mass_4.jpg'),
+                ('mister5', 'OREL BEYALA', 'mister', 'Photo/mass_5.jpg'),
+                ('mister6', 'WILFRIED BUGUEM', 'mister', 'Photo/mass_6.jpg'),
+                ('mister7', 'PRINCELY NZO', 'mister', 'Photo/mass_7.jpg'),
+                ('mister8', 'JOHANNES ELANGA', 'mister', 'Photo/mass_8.jpg')
             """)
             print(f"✅ {cur.rowcount} candidats insérés par défaut")
         else:
@@ -113,12 +113,12 @@ def init_database():
         
     except Exception as e:
         print(f"❌ Erreur lors de l'initialisation: {e}")
-        if 'conn' in locals():
-            conn.rollback()
-        # Ne pas bloquer l'application si l'init échoue
+        return False
     finally:
         if 'conn' in locals():
             conn.close()
+    
+    return True
 
 # ========== FONCTION PRINCIPALE DE CONNEXION ==========
 def get_db():
@@ -427,6 +427,27 @@ def test_endpoint():
         'message': 'API Miss & Mister fonctionnelle',
         'timestamp': datetime.now().isoformat(),
         'service': 'Miss & Mister AHN 2025'
+    }), 200
+
+@app.route('/api/debug', methods=['GET'])
+def debug_info():
+    """Endpoint de débogage"""
+    return jsonify({
+        'db_config': {
+            'host': DB_CONFIG['host'][:20] + '...' if len(DB_CONFIG['host']) > 20 else DB_CONFIG['host'],
+            'dbname': DB_CONFIG['dbname'],
+            'user': DB_CONFIG['user'],
+            'port': DB_CONFIG['port'],
+            'has_password': 'YES' if DB_CONFIG['password'] else 'NO'
+        },
+        'env_vars': {
+            'DB_HOST': 'SET' if os.getenv('DB_HOST') else 'NOT SET',
+            'DB_NAME': 'SET' if os.getenv('DB_NAME') else 'NOT SET',
+            'DB_USER': 'SET' if os.getenv('DB_USER') else 'NOT SET',
+            'DB_PASSWORD': 'SET' if os.getenv('DB_PASSWORD') else 'NOT SET',
+            'DB_PORT': 'SET' if os.getenv('DB_PORT') else 'NOT SET',
+            'RENDER': 'SET' if os.getenv('RENDER') else 'NOT SET'
+        }
     }), 200
 
 # ========== ROUTES POUR LE FRONTEND ET LES IMAGES ==========
