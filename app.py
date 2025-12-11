@@ -87,19 +87,19 @@ def init_database():
             # Insérer les candidats par défaut
             cur.execute("""
                 INSERT INTO candidates (id, nom, categorie, img) VALUES
-                ('miss1', 'LOVE NDAZOO', 'miss', 'Photo/miss_1.jpg'),
-                ('miss2', 'KERENA KENNE', 'miss', 'Photo/miss_2.jpg'),
-                ('miss3', 'DIVINE ZEKENG', 'miss', 'Photo/miss_3.jpg'),
-                ('miss4', 'HILARY TCHEUNDEM', 'miss', 'Photo/miss_4.jpg'),
-                ('miss5', 'ANUARITE DOUNANG', 'miss', 'Photo/miss_5.jpg'),
-                ('mister1', 'ULYSSE ZELEF', 'mister', 'Photo/mass_1.jpg'),
-                ('mister2', 'DOMINIQUE MBOAPFOURI', 'mister', 'Photo/mass_2.jpg'),
-                ('mister3', 'ULRICH MBAKONG', 'mister', 'Photo/mass_3.jpg'),
-                ('mister4', 'JORDAN BIAS', 'mister', 'Photo/mass_4.jpg'),
-                ('mister5', 'OREL BEYALA', 'mister', 'Photo/mass_5.jpg'),
-                ('mister6', 'WILFRIED BUGUEM', 'mister', 'Photo/mass_6.jpg'),
-                ('mister7', 'PRINCELY NZO', 'mister', 'Photo/mass_7.jpg'),
-                ('mister8', 'JOHANNES ELANGA', 'mister', 'Photo/mass_8.jpg')
+                ('miss1', 'LOVE NDAZOO', 'miss', 'miss_1.jpg'),
+                ('miss2', 'KERENA KENNE', 'miss', 'miss_2.jpg'),
+                ('miss3', 'DIVINE ZEKENG', 'miss', 'miss_3.jpg'),
+                ('miss4', 'HILARY TCHEUNDEM', 'miss', 'miss_4.jpg'),
+                ('miss5', 'ANUARITE DOUNANG', 'miss', 'miss_5.jpg'),
+                ('mister1', 'ULYSSE ZELEF', 'mister', 'mass_1.jpg'),
+                ('mister2', 'DOMINIQUE MBOAPFOURI', 'mister', 'mass_2.jpg'),
+                ('mister3', 'ULRICH MBAKONG', 'mister', 'mass_3.jpg'),
+                ('mister4', 'JORDAN BIAS', 'mister', 'mass_4.jpg'),
+                ('mister5', 'OREL BEYALA', 'mister', 'mass_5.jpg'),
+                ('mister6', 'WILFRIED BUGUEM', 'mister', 'mass_6.jpg'),
+                ('mister7', 'PRINCELY NZO', 'mister', 'mass_7.jpg'),
+                ('mister8', 'JOHANNES ELANGA', 'mister', 'mass_8.jpg')
             """)
             print(f"✅ {cur.rowcount} candidats insérés par défaut")
         else:
