@@ -6,32 +6,40 @@ from psycopg.rows import dict_row
 from datetime import datetime
 
 app = Flask(__name__, static_folder='static')
-CORS(app)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": ["https://election-mister.onrender.com", "http://localhost:5000"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "Accept"]
+    }
+})
 
-# CONFIGURATION POUR RENDER - Utilisez ces noms de variables
+# ========== CONFIGURATION SÉCURISÉE ==========
+# NE JAMAIS mettre les mots de passe en dur dans le code !
 DB_CONFIG = {
-    'host': os.getenv('DB_HOST', 'dpg-d4tf1uchg0os73ct4gi0-a.oregon-postgres.render.com'),
-    'database': os.getenv('DB_NAME', 'election_k6jj'),
-    'user': os.getenv('DB_USER', 'election_user'),
-    'password': os.getenv('DB_PASSWORD', 'uIvD4UaRMcqngNl3Re643KySUFvhnRF0'),
-    'port': os.getenv('DB_PORT', '5432'),
-    'sslmode': 'require'  # TRÈS IMPORTANT pour Render
+    'host': os.getenv('DB_HOST'),  # Pas de valeur par défaut
+    'database': os.getenv('DB_NAME'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),  # Doit être dans les variables d'environnement
+    'port': os.getenv('DB_PORT'),
+    'sslmode': 'require'
 }
 
 # ========== FONCTION D'INITIALISATION DE LA BASE ==========
 def init_database():
-    # FORCER la connexion avec paramètres directs
-    forced_config = {
-        'host': 'dpg-d4tf1uchg0os73ct4gi0-a.oregon-postgres.render.com',
-        'database': 'election_k6jj',
-        'user': 'election_user',
-        'password': 'uIvD4UaRMcqngNl3Re643KySUFvhnRF0',
-        'port': '5432',
-        'sslmode': 'require'
-    }
+    """Initialise la base de données si les variables d'environnement sont configurées"""
+    
+    # Vérifier que toutes les variables d'environnement sont définies
+    required_vars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_PORT']
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    
+    if missing_vars:
+        print(f"⚠️ Variables d'environnement manquantes: {missing_vars}")
+        print("L'initialisation de la base de données est ignorée.")
+        return
     
     try:
-        conn = psycopg.connect(**forced_config, row_factory=dict_row)
+        conn = psycopg.connect(**DB_CONFIG, row_factory=dict_row)
         cur = conn.cursor()
         
         # 1. Créer la table candidates
@@ -105,11 +113,11 @@ def init_database():
         
     except Exception as e:
         print(f"❌ Erreur lors de l'initialisation: {e}")
-        if conn:
+        if 'conn' in locals():
             conn.rollback()
         # Ne pas bloquer l'application si l'init échoue
     finally:
-        if conn:
+        if 'conn' in locals():
             conn.close()
 
 # ========== FONCTION PRINCIPALE DE CONNEXION ==========
@@ -121,6 +129,20 @@ def get_db():
     except Exception as e:
         print(f"Erreur de connexion à la base de données: {e}")
         raise
+
+# ========== GESTIONNAIRES D'ERREURS ==========
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'error': 'Endpoint non trouvé'}), 404
+
+@app.errorhandler(500)
+def server_error(error):
+    return jsonify({'error': 'Erreur serveur interne'}), 500
+
+@app.errorhandler(Exception)
+def handle_exception(error):
+    print(f"Erreur non gérée: {error}")
+    return jsonify({'error': 'Erreur interne du serveur'}), 500
 
 # ========== ROUTES API ==========
 @app.route('/api/candidates', methods=['GET'])
@@ -386,11 +408,8 @@ def get_stats():
 @app.route('/api/health', methods=['GET'])
 def health_check():
     try:
-        # Tenter d'initialiser la base au premier appel
-        try:
-            init_database()
-        except:
-            pass
+        # Tenter d'initialiser la base si ce n'est pas déjà fait
+        init_database()
             
         conn = get_db()
         cur = conn.cursor()
@@ -401,7 +420,16 @@ def health_check():
     except Exception as e:
         return jsonify({'status': 'unhealthy', 'database': 'disconnected', 'error': str(e)}), 500
 
-# ========== ROUTES POUR LE FRONTEND ==========
+@app.route('/api/test', methods=['GET'])
+def test_endpoint():
+    """Endpoint de test pour vérifier que l'API fonctionne"""
+    return jsonify({
+        'message': 'API Miss & Mister fonctionnelle',
+        'timestamp': datetime.now().isoformat(),
+        'service': 'Miss & Mister AHN 2025'
+    }), 200
+
+# ========== ROUTES POUR LE FRONTEND ET LES IMAGES ==========
 @app.route('/')
 def serve_index():
     return send_from_directory('static', 'index.html')
@@ -410,20 +438,31 @@ def serve_index():
 def serve_static(path):
     return send_from_directory('static', path)
 
+@app.route('/Photo/<path:filename>')
+def serve_image(filename):
+    """Servir les images du dossier Photo"""
+    try:
+        return send_from_directory('Photo', filename)
+    except:
+        return jsonify({'error': 'Image non trouvée'}), 404
+
 # ========== DÉMARRAGE DE L'APPLICATION ==========
 if __name__ == '__main__':
-    # Initialiser la base au démarrage
     print("🚀 Démarrage de l'application Miss & Mister...")
+    print(f"📁 Dossier static: {app.static_folder}")
+    
+    # Initialiser la base au démarrage
     try:
         init_database()
     except Exception as e:
         print(f"⚠️ Note lors de l'initialisation: {e}")
     
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    print(f"🌐 Serveur démarré sur le port {port}")
+    app.run(host='0.0.0.0', port=port, debug=True)
 else:
     # Pour gunicorn (production)
-    print("🚀 Application chargée par gunicorn...")
+    print("🚀 Application chargée en production...")
     try:
         init_database()
     except Exception as e:
