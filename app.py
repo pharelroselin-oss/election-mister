@@ -1,14 +1,13 @@
 import os
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.rows import dict_row
 import os
 from datetime import datetime
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
-
 DB_CONFIG = {
     'host': os.getenv('PGHOST', 'localhost'),
     'database': os.getenv('PGDATABASE', 'election_mister'),
@@ -19,7 +18,7 @@ DB_CONFIG = {
 
 def get_db():
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = psycopg.connect(**DB_CONFIG)
         return conn
     except Exception as e:
         print(f"Erreur de connexion à la base de données: {e}")
@@ -119,7 +118,7 @@ def submit_vote():
             'transaction_id': transaction_id
         }), 201
         
-    except psycopg2.errors.UniqueViolation as e:
+    except psycopg.errors.UniqueViolation as e:
         print(f"Violation de contrainte unique: {e}")
         if 'conn' in locals():
             conn.rollback()
