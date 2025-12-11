@@ -349,10 +349,8 @@ footer{text-align:center;margin-top:40px;color:var(--muted);}
 // CONFIGURATION
 // ============================
 
-// URL de l'API Flask
-const API_BASE_URL = window.location.hostname === 'localhost' 
-  ? 'http://localhost:5000/api' 
-  : 'http://' + window.location.hostname + ':5000/api';
+// URL de l'API Flask - CORRIGÉ !!!
+const API_BASE_URL = window.location.origin + '/api';
 
 // Dossier où sont stockées les images
 const IMAGES_BASE_PATH = '/Photo/';
