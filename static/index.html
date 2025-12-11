@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Miss & Mister Arts et Humanités Numériques 2026 — Vote PAYANT</title>
+<title>Miss & Mister Arts et Humanités Numériques 2025 — Vote PAYANT</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 /* Styles existants... */
@@ -276,14 +276,14 @@ footer{text-align:center;margin-top:40px;color:var(--muted);}
 <div class="grid">
 <main>
 <div class="card">
-<h2 style="color:var(--accent-2);margin-bottom:12px;">Candidates Miss Master</h2>
+<h2 style="color:var(--accent-2);margin-bottom:12px;">Candidates Miss</h2>
 <div class="candidates" id="miss-list">
   <div class="loading">
     <div class="loading-spinner"></div>
     Chargement des candidates...
   </div>
 </div>
-<h2 style="color:var(--accent-2);margin-top:32px;margin-bottom:12px;">Candidates Mister Master</h2>
+<h2 style="color:var(--accent-2);margin-top:32px;margin-bottom:12px;">Candidats Mister</h2>
 <div class="candidates" id="mister-list">
   <div class="loading">
     <div class="loading-spinner"></div>
@@ -300,7 +300,7 @@ footer{text-align:center;margin-top:40px;color:var(--muted);}
 </div>
 </main>
 </div>
-<footer>© Comité de Parrainage Arts et Humanités Numériques 2030 — Votes validés par l'admin uniquement.</footer>
+<footer>© Comité de Parrainage Arts et Humanités Numériques 2025 — Votes validés par l'admin uniquement.</footer>
 </div>
 
 <!-- Payment Modal -->
@@ -352,7 +352,7 @@ footer{text-align:center;margin-top:40px;color:var(--muted);}
 // URL de l'API Flask - CORRIGÉ !!!
 const API_BASE_URL = window.location.origin + '/api';
 
-// Dossier où sont stockées les images
+// Dossier où sont stockées les images - CORRIGÉ !!!
 const IMAGES_BASE_PATH = '/static/photo/';
 
 // Prix par vote
@@ -532,14 +532,19 @@ function createCandidateCard(candidate) {
   
   let imageContent = '';
   
+  // URL de placeholder pour les images manquantes
+  const placeholderUrl = `https://via.placeholder.com/300x400/3b6bf0/ffffff?text=${encodeURIComponent(candidateName.substring(0, 15))}`;
+  
   if (imageUrl) {
     imageContent = `
-      <img src="${imageUrl}" alt="${candidateName}" 
-           onerror="this.onerror=null; this.parentElement.innerHTML = \`
-            <div style='width:100%;height:100%;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:white;font-size:4rem;font-weight:bold;'>
-              ${initials}
-            </div>
-          \`">
+      <img src="${imageUrl}" 
+           alt="${candidateName}" 
+           style="width: 100%; height: 100%; object-fit: cover;"
+           onerror="
+             console.error('Erreur chargement image:', this.src);
+             this.onerror = null;
+             this.src = '${placeholderUrl}';
+           ">
     `;
   } else {
     imageContent = `
@@ -548,13 +553,19 @@ function createCandidateCard(candidate) {
         height: 100%;
         background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 4rem;
-        font-weight: bold;
+        padding: 20px;
+        text-align: center;
       ">
-        ${initials}
+        <div style="font-size: 4rem; font-weight: bold; margin-bottom: 10px;">
+          ${initials}
+        </div>
+        <div style="font-size: 1.2rem;">
+          ${candidateName}
+        </div>
       </div>
     `;
   }
@@ -577,6 +588,25 @@ function createCandidateCard(candidate) {
       </div>
     </div>
   `;
+}
+
+// Fonction pour tester les URLs d'images
+async function testImageUrls() {
+  console.log('🔍 Test des URLs d\'images...');
+  
+  for (const candidate of allCandidates) {
+    if (candidate.img && !candidate.img.startsWith('http')) {
+      const imageUrl = IMAGES_BASE_PATH + candidate.img;
+      console.log(`Test: ${candidate.nom} -> ${imageUrl}`);
+      
+      try {
+        const response = await fetch(imageUrl, { method: 'HEAD' });
+        console.log(`  ${response.ok ? '✅ OK' : '❌ Erreur'}: ${response.status} ${response.statusText}`);
+      } catch (error) {
+        console.log(`  ❌ Erreur fetch: ${error.message}`);
+      }
+    }
+  }
 }
 
 // Charger les statistiques
@@ -1081,12 +1111,17 @@ function saveLocalData() {
 // Au chargement de la page
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('🚀 Démarrage de l\'application de vote...');
+  console.log(`📁 Chemin images: ${IMAGES_BASE_PATH}`);
+  console.log(`🌐 API URL: ${API_BASE_URL}`);
   
   // Charger les transactions locales
   loadLocalTransactions();
   
   // Tester la connexion et charger les données
   await loadCandidates();
+  
+  // Tester les URLs d'images après chargement
+  setTimeout(testImageUrls, 2000);
   
   // Vérifier périodiquement la connexion
   setInterval(async () => {
@@ -1109,4 +1144,4 @@ window.addEventListener('online', async () => {
 });
 </script>
 </body>
-</html>
+</html> candidates
