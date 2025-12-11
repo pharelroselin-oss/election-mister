@@ -15,16 +15,23 @@ DB_CONFIG = {
     'user': os.getenv('DB_USER', 'election_user'),
     'password': os.getenv('DB_PASSWORD', 'uIvD4UaRMcqngNl3Re643KySUFvhnRF0'),
     'port': os.getenv('DB_PORT', '5432'),
-    'sslmode': 'require'  # IMPORTANT pour Render
+    'sslmode': 'require'  # TRÈS IMPORTANT pour Render
 }
 
 # ========== FONCTION D'INITIALISATION DE LA BASE ==========
 def init_database():
-    """Vérifie et crée les tables si elles n'existent pas."""
-    conn = None
+    # FORCER la connexion avec paramètres directs
+    forced_config = {
+        'host': 'dpg-d4tf1uchg0os73ct4gi0-a.oregon-postgres.render.com',
+        'database': 'election_k6jj',
+        'user': 'election_user',
+        'password': 'uIvD4UaRMcqngNl3Re643KySUFvhnRF0',
+        'port': '5432',
+        'sslmode': 'require'
+    }
+    
     try:
-        print("🔄 Initialisation de la base de données...")
-        conn = psycopg.connect(**DB_CONFIG, row_factory=dict_row)
+        conn = psycopg.connect(**forced_config, row_factory=dict_row)
         cur = conn.cursor()
         
         # 1. Créer la table candidates
