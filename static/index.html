@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Miss & Mister AHN 2025 — Vote</title>
+<title>Miss & Mister Arts et Humanités Numériques 2025 — Vote</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -19,14 +19,45 @@ header.hero{
   text-align:center; color:white;
   background:linear-gradient(135deg,var(--accent-1),var(--accent-2),var(--accent-3),var(--accent-1));
   background-size:400% 400%; animation:gradientBG 15s ease infinite;
-  box-shadow:0 12px 40px rgba(0,0,0,0.2);
+  box-shadow:0 12px 40px rgba(0,0,0,0.2); margin-bottom:20px;
 }
 @keyframes gradientBG{
   0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}
 }
-.hero h1{font-size:3rem;margin-bottom:12px;text-shadow:0 3px 12px rgba(0,0,0,0.25);}
-.hero .subtitle{font-size:1.3rem;color:rgba(255,255,255,0.9);margin-bottom:20px;}
-.hero .meta{display:flex;justify-content:center;gap:40px;font-weight:700;font-size:1.1rem;}
+.hero h1{font-size:2.8rem;margin-bottom:12px;text-shadow:0 3px 12px rgba(0,0,0,0.25);}
+.hero .subtitle{font-size:1.3rem;color:rgba(255,255,255,0.9);margin-bottom:15px;}
+.hero .meta{display:flex;justify-content:center;gap:40px;font-weight:700;font-size:1.1rem;margin-bottom:20px;}
+
+/* Compte à rebours */
+.countdown-container {
+  background:rgba(255,255,255,0.15); backdrop-filter:blur(10px);
+  border-radius:16px; padding:20px; margin:20px auto; max-width:600px;
+  border:2px solid rgba(255,255,255,0.2);
+}
+.countdown-title {
+  font-size:1.2rem; margin-bottom:15px; font-weight:600;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+}
+.countdown-grid {
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:15px;
+}
+.countdown-item {
+  background:rgba(255,255,255,0.2); border-radius:12px; padding:15px;
+  text-align:center; backdrop-filter:blur(5px); border:1px solid rgba(255,255,255,0.1);
+}
+.countdown-value {
+  font-size:2.5rem; font-weight:800; line-height:1;
+  text-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+.countdown-label {
+  font-size:0.9rem; margin-top:5px; opacity:0.9;
+}
+.vote-ended {
+  background:rgba(220,53,69,0.2); border:2px solid #dc3545;
+  padding:20px; border-radius:16px; margin:20px auto; max-width:600px;
+  text-align:center; font-weight:600; font-size:1.2rem;
+}
+
 .admin-btn{
   position:absolute;top:20px;right:20px; background:rgba(255,255,255,0.25);
   backdrop-filter:blur(6px); border:none;color:white; padding:12px 20px;
@@ -55,6 +86,7 @@ header.hero{
   border:none;color:white;font-weight:700;border-radius:14px;cursor:pointer;transition:all 0.3s;
 }
 .vote-btn:hover{transform:scale(1.05);box-shadow:0 8px 16px rgba(0,0,0,0.2);}
+.vote-btn:disabled{background:#ccc;cursor:not-allowed;transform:none;box-shadow:none;}
 #ranking{margin-top:32px;}
 .ranking-item{
   margin-bottom:16px; padding:12px; background:#fff; border-radius:12px;
@@ -89,7 +121,7 @@ header.hero{
 @keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
 .modal-content{
   background:white;width:450px;padding:32px;border-radius:20px;
-  box-shadow:0 20px 40px rgba(0,0,0,0.25);
+  box-shadow:0 20px 40px rgba(0,0,0,0.25); max-width:90%;
 }
 .modal-content h3{margin-bottom:18px;color:var(--accent-2);}
 .modal-content label{margin-top:12px;display:block;font-weight:600;}
@@ -110,7 +142,7 @@ header.hero{
 .admin-card button{padding:8px 14px;border:none;background:var(--accent-2);color:white;border-radius:10px;cursor:pointer;margin-left:8px;transition:0.3s;}
 .admin-card button.reject{background:#ff3c3c;}
 #payment-number{margin-bottom:10px;font-weight:600;}
-footer{text-align:center;margin-top:40px;color:var(--muted);}
+footer{text-align:center;margin-top:40px;color:var(--muted);padding:20px;border-top:1px solid #eee;}
 .loading{text-align:center;padding:40px;color:var(--muted);}
 .loading-spinner{
   border:4px solid #f3f3f3;border-top:4px solid var(--accent-2);border-radius:50%;
@@ -129,6 +161,16 @@ footer{text-align:center;margin-top:40px;color:var(--muted);}
   padding:15px;border-radius:10px;margin:15px 0;text-align:center;
 }
 @media(max-width:900px){.grid{grid-template-columns:1fr;}.candidates{grid-template-columns:1fr;}}
+@media(max-width:768px){
+  .hero h1{font-size:2.2rem;}
+  .countdown-grid{gap:10px;}
+  .countdown-value{font-size:2rem;}
+  .hero .meta{flex-direction:column;gap:15px;}
+}
+@media(max-width:480px){
+  .countdown-grid{grid-template-columns:repeat(2,1fr);}
+  .hero h1{font-size:1.8rem;}
+}
 </style>
 </head>
 <body>
@@ -142,6 +184,37 @@ footer{text-align:center;margin-top:40px;color:var(--muted);}
 <div> <strong id="candidates-count">0</strong> Candidats</div>
 <div> <strong id="votes-count">0</strong> Votes</div>
 </div>
+
+<!-- Compte à rebours -->
+<div id="countdown" class="countdown-container">
+  <div class="countdown-title">
+    <span>⏳ TEMPS RESTANT POUR VOTER</span>
+  </div>
+  <div class="countdown-grid">
+    <div class="countdown-item">
+      <div class="countdown-value" id="countdown-days">00</div>
+      <div class="countdown-label">JOURS</div>
+    </div>
+    <div class="countdown-item">
+      <div class="countdown-value" id="countdown-hours">00</div>
+      <div class="countdown-label">HEURES</div>
+    </div>
+    <div class="countdown-item">
+      <div class="countdown-value" id="countdown-minutes">00</div>
+      <div class="countdown-label">MINUTES</div>
+    </div>
+    <div class="countdown-item">
+      <div class="countdown-value" id="countdown-seconds">00</div>
+      <div class="countdown-label">SECONDES</div>
+    </div>
+  </div>
+</div>
+
+<div id="vote-ended" class="vote-ended" style="display:none;">
+  ⏰ <strong>LES VOTES SONT TERMINÉS</strong><br>
+  La période de vote s'est achevée le 20 décembre 2025 à 21h00
+</div>
+
 <button class="admin-btn"> Admin</button>
 </header>
 
@@ -156,7 +229,7 @@ footer{text-align:center;margin-top:40px;color:var(--muted);}
 <div class="candidates" id="miss-list">
   <div class="loading"><div class="loading-spinner"></div>Chargement...</div>
 </div>
-<h2 style="color:var(--accent-2);margin-top:32px;margin-bottom:12px;">Candidats Mister</h2>
+<h2 style="color:var(--accent-2);margin-top:32px;margin-bottom:12px;">Candidates Mister</h2>
 <div class="candidates" id="mister-list">
   <div class="loading"><div class="loading-spinner"></div>Chargement...</div>
 </div>
@@ -167,7 +240,14 @@ footer{text-align:center;margin-top:40px;color:var(--muted);}
 </div>
 </main>
 </div>
-<footer>© Comité de Parrainage Arts et Humanités Numériques 2025</footer>
+<footer>
+<div>© Comité de Parrainage Arts et Humanités Numériques 2025</div>
+<div style="margin-top:10px;font-size:0.9rem;color:#666;">
+  Date limite : 20 décembre 2025 à 21h00 (Heure Cameroun) • 
+  <a href="https://election-mister.onrender.com/api/debug/files" style="color:var(--accent-2);">Vérifier les fichiers</a> • 
+  <a href="https://election-mister.onrender.com/api/fix-images" style="color:var(--accent-2);">Corriger images</a>
+</div>
+</footer>
 </div>
 
 <!-- Payment Modal -->
@@ -214,14 +294,73 @@ footer{text-align:center;margin-top:40px;color:var(--muted);}
 // CONFIGURATION
 // ============================
 const API_BASE_URL = window.location.origin + '/api';
-const IMAGES_BASE_PATH = '/static/photo/';  // IMPORTANT: même chemin que Flask
+const IMAGES_BASE_PATH = '/static/photo/';
 const PRICE_PER_VOTE = 100;
+const VOTE_DEADLINE = new Date('2025-12-20T21:00:00+01:00'); // 21h00 Cameroun (UTC+1)
 
 let allCandidates = [];
 let pendingTransactions = [];
 let currentCandidateId = null;
 let isDatabaseConnected = false;
 let adminToken = null;
+let voteActive = true;
+let countdownInterval = null;
+
+// ============================
+// COMPTE À REBOURS
+// ============================
+function updateCountdown() {
+  const now = new Date();
+  const timeRemaining = VOTE_DEADLINE - now;
+  
+  if (timeRemaining <= 0) {
+    // Vote terminé
+    voteActive = false;
+    document.getElementById('countdown').style.display = 'none';
+    document.getElementById('vote-ended').style.display = 'block';
+    
+    // Désactiver tous les boutons de vote
+    document.querySelectorAll('.vote-btn').forEach(btn => {
+      btn.disabled = true;
+      btn.textContent = 'Vote terminé';
+      btn.style.background = '#ccc';
+    });
+    
+    // Arrêter l'intervalle
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+    }
+    
+    return;
+  }
+  
+  // Calculer jours, heures, minutes, secondes
+  const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+  
+  // Mettre à jour l'affichage
+  document.getElementById('countdown-days').textContent = days.toString().padStart(2, '0');
+  document.getElementById('countdown-hours').textContent = hours.toString().padStart(2, '0');
+  document.getElementById('countdown-minutes').textContent = minutes.toString().padStart(2, '0');
+  document.getElementById('countdown-seconds').textContent = seconds.toString().padStart(2, '0');
+  
+  // Animation pour les secondes
+  const secondsElement = document.getElementById('countdown-seconds');
+  secondsElement.style.transform = 'scale(1.1)';
+  setTimeout(() => {
+    secondsElement.style.transform = 'scale(1)';
+  }, 300);
+}
+
+function startCountdown() {
+  // Mettre à jour immédiatement
+  updateCountdown();
+  
+  // Puis mettre à jour toutes les secondes
+  countdownInterval = setInterval(updateCountdown, 1000);
+}
 
 // ============================
 // FONCTIONS UTILITAIRES
@@ -250,11 +389,14 @@ async function fetchAPI(endpoint, options = {}) {
     });
     
     clearTimeout(timeoutId);
-    if (!response.ok) throw new Error(`Erreur ${response.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Erreur ${response.status}: ${errorText}`);
+    }
     return await response.json();
   } catch (error) {
     clearTimeout(timeoutId);
-    if (error.name === 'AbortError') throw new Error('Timeout');
+    if (error.name === 'AbortError') throw new Error('Timeout: Le serveur ne répond pas');
     throw error;
   }
 }
@@ -298,17 +440,24 @@ async function loadCandidates() {
       allCandidates = await fetchAPI('/candidates');
       console.log('Candidats chargés:', allCandidates);
       
-      // TEST: Vérifier les URLs d'images
-      console.log('🔍 Test des URLs d\'images:');
+      // Tester les images
+      console.log('🔍 Test des images:');
       allCandidates.forEach(candidate => {
         if (candidate.img) {
-          const imgUrl = IMAGES_BASE_PATH + candidate.img;
+          // Corriger le chemin si nécessaire
+          let imgPath = candidate.img;
+          if (imgPath.startsWith('Photo/')) {
+            imgPath = imgPath.replace('Photo/', '');
+            console.log(`  Correction: ${candidate.img} -> ${imgPath}`);
+          }
+          
+          const imgUrl = IMAGES_BASE_PATH + imgPath;
           console.log(`  ${candidate.nom}: ${imgUrl}`);
           
-          // Précharger l'image
+          // Précharger
           const img = new Image();
-          img.onload = () => console.log(`    ✅ Chargée: ${imgUrl}`);
-          img.onerror = () => console.log(`    ❌ Erreur: ${imgUrl}`);
+          img.onload = () => console.log(`    ✅ Chargée`);
+          img.onerror = () => console.log(`    ❌ Erreur`);
           img.src = imgUrl;
         }
       });
@@ -350,6 +499,10 @@ function displayCandidates() {
   setTimeout(() => {
     document.querySelectorAll('.vote-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
+        if (!voteActive) {
+          alert('⏰ Les votes sont terminés !\nLa période de vote s\'est achevée le 20 décembre 2025 à 21h00.');
+          return;
+        }
         openPaymentModal(e.target.getAttribute('data-id'));
       });
     });
@@ -358,12 +511,19 @@ function displayCandidates() {
 
 function createCandidateCard(candidate) {
   const candidateNumber = candidate.candidate_number || extractCandidateNumber(candidate.id);
-  const imageUrl = candidate.img ? IMAGES_BASE_PATH + candidate.img : null;
+  
+  // CORRECTION DES CHEMINS D'IMAGES
+  let imageFilename = candidate.img || '';
+  if (imageFilename.startsWith('Photo/')) {
+    imageFilename = imageFilename.replace('Photo/', '');
+  }
+  
+  const imageUrl = imageFilename ? IMAGES_BASE_PATH + imageFilename : null;
   const candidateName = candidate.nom || 'Candidat';
   const initials = candidateName.split(' ').map(w => w[0]).join('').toUpperCase().substr(0, 2);
   
-  // URL de secours
-  const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(candidateName)}&background=3b6bf0&color=fff&size=300`;
+  // URL de secours (avatar avec initiales)
+  const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(candidateName)}&background=3b6bf0&color=fff&bold=true&size=300`;
   
   return `
     <div class="candidate">
@@ -371,7 +531,11 @@ function createCandidateCard(candidate) {
       <div class="thumb">
         <img src="${imageUrl || fallbackUrl}" 
              alt="${candidateName}"
-             onerror="this.onerror=null; this.src='${fallbackUrl}';"
+             onerror="
+               if (this.src !== '${fallbackUrl}') {
+                 this.src = '${fallbackUrl}';
+               }
+             "
              loading="lazy">
       </div>
       <div class="info">
@@ -382,7 +546,9 @@ function createCandidateCard(candidate) {
         <div class="votes-badge" data-votes-id="${candidate.id}">Votes: ${candidate.votes || 0}</div>
       </div>
       <div class="actions">
-        <button class="vote-btn" data-id="${candidate.id}">Voter</button>
+        <button class="vote-btn" data-id="${candidate.id}" ${!voteActive ? 'disabled' : ''}>
+          ${voteActive ? 'Voter' : 'Vote terminé'}
+        </button>
       </div>
     </div>
   `;
@@ -469,6 +635,11 @@ async function checkTransactionCode(code) {
 }
 
 function openPaymentModal(candidateId) {
+  if (!voteActive) {
+    alert('⏰ Les votes sont terminés !\nLa période de vote s\'est achevée le 20 décembre 2025 à 21h00.');
+    return;
+  }
+  
   currentCandidateId = candidateId;
   document.getElementById('vote-count').value = 1;
   document.getElementById('payment-code').value = '';
@@ -504,6 +675,12 @@ function updatePaymentNumber() {
 document.getElementById('payment-method').addEventListener('change', updatePaymentNumber);
 
 document.getElementById('submit-payment').addEventListener('click', async function() {
+  if (!voteActive) {
+    alert('⏰ Les votes sont terminés !\nLa période de vote s\'est achevée le 20 décembre 2025 à 21h00.');
+    closePaymentModal();
+    return;
+  }
+  
   const method = document.getElementById('payment-method').value;
   const code = document.getElementById('payment-code').value.trim();
   const voteCount = parseInt(document.getElementById('vote-count').value) || 1;
@@ -545,6 +722,10 @@ document.getElementById('submit-payment').addEventListener('click', async functi
       console.error('Erreur vote:', error);
       if (error.message.includes('déjà utilisé') || error.message.includes('409')) {
         alert('❌ Code déjà utilisé!');
+      } else if (error.message.includes('terminée')) {
+        alert('⏰ ' + error.message);
+        voteActive = false;
+        updateCountdown();
       } else {
         alert('❌ Erreur: ' + error.message + '\nVote enregistré localement.');
         saveVoteLocally(voteData, candidate);
@@ -763,16 +944,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   console.log('🚀 Démarrage...');
   console.log(`🌐 API: ${API_BASE_URL}`);
   console.log(`🖼️ Images: ${IMAGES_BASE_PATH}`);
+  console.log(`⏰ Date limite: ${VOTE_DEADLINE.toLocaleString('fr-FR')}`);
   
-  // Test direct d'une image
+  // Démarrer le compte à rebours
+  startCountdown();
+  
+  // Tester une image
   const testImg = new Image();
-  testImg.onload = () => console.log('✅ Test image loaded successfully');
-  testImg.onerror = () => console.log('❌ Test image failed to load');
+  testImg.onload = () => console.log('✅ Test image chargée');
+  testImg.onerror = () => console.log('❌ Test image échouée');
   testImg.src = IMAGES_BASE_PATH + 'miss_1.jpg';
   
   loadLocalTransactions();
   await loadCandidates();
   
+  // Vérifier périodiquement la connexion
   setInterval(async () => {
     await testConnection();
   }, 30000);
