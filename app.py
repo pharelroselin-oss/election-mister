@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import psycopg
 from psycopg.rows import dict_row
+from psycopg import sql
 from datetime import datetime
 
 app = Flask(__name__, static_folder='static')
@@ -14,25 +15,21 @@ CORS(app, resources={
     }
 })
 
-# ========== CONFIGURATION SÉCURISÉE ==========
-DB_CONFIG = {
-    'host': os.getenv('DB_HOST', 'dpg-d4tf1uchg0os73ct4gi0-a.oregon-postgres.render.com'),
-    'dbname': os.getenv('DB_NAME', 'election_k6jj'),
-    'user': os.getenv('DB_USER', 'election_user'),
-    'password': os.getenv('DB_PASSWORD', 'uIvD4UaRMcqngNl3Re643KySUFvhnRF0'),
-    'port': os.getenv('DB_PORT', '5432'),
-    'sslmode': 'require'
-}
+# ========== CONFIGURATION AVEC URL DIRECTE ==========
+DATABASE_URL = os.getenv('DATABASE_URL', 
+    'postgresql://election_user:uIvD4UaRMcqngNl3Re643KySUFvhnRF0@dpg-d4tf1uchg0os73ct4gi0-a.oregon-postgres.render.com/election_k6jj'
+)
 
 # ========== FONCTION D'INITIALISATION DE LA BASE ==========
 def init_database():
     """Initialise la base de données"""
     
     print("🔧 Tentative d'initialisation de la base de données...")
-    print(f"📊 Configuration utilisée: host={DB_CONFIG['host']}, dbname={DB_CONFIG['dbname']}")
+    print(f"📊 URL de base de données: {DATABASE_URL[:50]}...")  # Affiche les premiers caractères seulement
     
     try:
-        conn = psycopg.connect(**DB_CONFIG, row_factory=dict_row)
+        # Utiliser l'URL de connexion directement
+        conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
         cur = conn.cursor()
         
         # 1. Créer la table candidates
@@ -87,7 +84,7 @@ def init_database():
         count = cur.fetchone()['count']
         
         if count == 0:
-            # Insérer les candidats par défaut - CORRIGÉ : utiliser 'mister' au lieu de 'mass'
+            # Insérer les candidats par défaut
             cur.execute("""
                 INSERT INTO candidates (id, nom, categorie, img) VALUES
                 ('miss1', 'LOVE NDAZOO', 'miss', 'Photo/miss_1.jpg'),
@@ -111,20 +108,20 @@ def init_database():
         conn.commit()
         print("🎉 Initialisation de la base de données terminée avec succès !")
         
+        return True
+        
     except Exception as e:
         print(f"❌ Erreur lors de l'initialisation: {e}")
         return False
     finally:
         if 'conn' in locals():
             conn.close()
-    
-    return True
 
 # ========== FONCTION PRINCIPALE DE CONNEXION ==========
 def get_db():
     """Obtient une connexion à la base de données."""
     try:
-        conn = psycopg.connect(**DB_CONFIG, row_factory=dict_row)
+        conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
         return conn
     except Exception as e:
         print(f"Erreur de connexion à la base de données: {e}")
@@ -409,16 +406,27 @@ def get_stats():
 def health_check():
     try:
         # Tenter d'initialiser la base si ce n'est pas déjà fait
-        init_database()
+        success = init_database()
             
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("SELECT 1")
+        cur.execute("SELECT 1 as test")
+        result = cur.fetchone()
         cur.close()
         conn.close()
-        return jsonify({'status': 'healthy', 'database': 'connected'}), 200
+        
+        return jsonify({
+            'status': 'healthy', 
+            'database': 'connected',
+            'initialization_success': success,
+            'test_result': result
+        }), 200
     except Exception as e:
-        return jsonify({'status': 'unhealthy', 'database': 'disconnected', 'error': str(e)}), 500
+        return jsonify({
+            'status': 'unhealthy', 
+            'database': 'disconnected', 
+            'error': str(e)
+        }), 500
 
 @app.route('/api/test', methods=['GET'])
 def test_endpoint():
@@ -432,20 +440,22 @@ def test_endpoint():
 @app.route('/api/debug', methods=['GET'])
 def debug_info():
     """Endpoint de débogage"""
+    # Masquer le mot de passe dans l'URL
+    safe_url = DATABASE_URL
+    if '@' in safe_url:
+        parts = safe_url.split('@')
+        if ':' in parts[0]:
+            user_pass = parts[0].split(':')
+            if len(user_pass) == 3:  # postgresql://user:password@host
+                safe_url = f"postgresql://{user_pass[0]}:***@{parts[1]}"
+            elif len(user_pass) == 2:
+                safe_url = f"postgresql://{user_pass[0]}:***@{parts[1]}"
+    
     return jsonify({
-        'db_config': {
-            'host': DB_CONFIG['host'][:20] + '...' if len(DB_CONFIG['host']) > 20 else DB_CONFIG['host'],
-            'dbname': DB_CONFIG['dbname'],
-            'user': DB_CONFIG['user'],
-            'port': DB_CONFIG['port'],
-            'has_password': 'YES' if DB_CONFIG['password'] else 'NO'
-        },
-        'env_vars': {
-            'DB_HOST': 'SET' if os.getenv('DB_HOST') else 'NOT SET',
-            'DB_NAME': 'SET' if os.getenv('DB_NAME') else 'NOT SET',
-            'DB_USER': 'SET' if os.getenv('DB_USER') else 'NOT SET',
-            'DB_PASSWORD': 'SET' if os.getenv('DB_PASSWORD') else 'NOT SET',
-            'DB_PORT': 'SET' if os.getenv('DB_PORT') else 'NOT SET',
+        'database_url': safe_url,
+        'has_database_url': 'YES' if DATABASE_URL else 'NO',
+        'env_variables': {
+            'DATABASE_URL': 'SET' if os.getenv('DATABASE_URL') else 'NOT SET',
             'RENDER': 'SET' if os.getenv('RENDER') else 'NOT SET'
         }
     }), 200
