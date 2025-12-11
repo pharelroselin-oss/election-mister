@@ -3,33 +3,124 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import psycopg
 from psycopg.rows import dict_row
-import os
 from datetime import datetime
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
+
+# CONFIGURATION POUR RENDER - Utilisez ces noms de variables
 DB_CONFIG = {
-    'host': os.getenv('PGHOST', 'localhost'),
-    'database': os.getenv('PGDATABASE', 'election_mister'),
-    'user': os.getenv('PGUSER', 'postgres'),
-    'password': os.getenv('PGPASSWORD', 'azerty'),
-    'port': os.getenv('PGPORT', '5432')
+    'host': os.getenv('DB_HOST', 'dpg-d4tf1uchg0os73ct4gi0-a.oregon-postgres.render.com'),
+    'database': os.getenv('DB_NAME', 'election_k6jj'),
+    'user': os.getenv('DB_USER', 'election_user'),
+    'password': os.getenv('DB_PASSWORD', 'uIvD4UaRMcqngNl3Re643KySUFvhnRF0'),
+    'port': os.getenv('DB_PORT', '5432'),
+    'sslmode': 'require'  # IMPORTANT pour Render
 }
 
-def get_db():
+# ========== FONCTION D'INITIALISATION DE LA BASE ==========
+def init_database():
+    """Vérifie et crée les tables si elles n'existent pas."""
+    conn = None
     try:
-        conn = psycopg.connect(**DB_CONFIG)
+        print("🔄 Initialisation de la base de données...")
+        conn = psycopg.connect(**DB_CONFIG, row_factory=dict_row)
+        cur = conn.cursor()
+        
+        # 1. Créer la table candidates
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS candidates (
+                id VARCHAR(50) PRIMARY KEY,
+                nom VARCHAR(100) NOT NULL,
+                categorie VARCHAR(20) CHECK (categorie IN ('miss', 'mister')),
+                img VARCHAR(255),
+                votes INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        print("✅ Table 'candidates' vérifiée/créée")
+        
+        # 2. Créer la table transactions
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS transactions (
+                id SERIAL PRIMARY KEY,
+                candidate_id VARCHAR(50) NOT NULL,
+                methode_paiement VARCHAR(50) NOT NULL,
+                code_transaction VARCHAR(100) NOT NULL,
+                code_transaction_normalized VARCHAR(100) GENERATED ALWAYS AS (UPPER(code_transaction)) STORED,
+                nombre_votes INTEGER NOT NULL,
+                statut VARCHAR(20) DEFAULT 'pending' CHECK (statut IN ('pending', 'validated', 'rejected')),
+                montant INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                validated_at TIMESTAMP,
+                FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE,
+                CONSTRAINT unique_code_transaction_normalized UNIQUE (code_transaction_normalized)
+            )
+        """)
+        print("✅ Table 'transactions' vérifiée/créée")
+        
+        # 3. Créer les indexes
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS idx_transactions_code_normalized 
+            ON transactions(code_transaction_normalized)
+        """)
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS idx_transactions_status 
+            ON transactions(statut)
+        """)
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS idx_transactions_candidate 
+            ON transactions(candidate_id)
+        """)
+        print("✅ Indexes vérifiés/créés")
+        
+        # 4. Vérifier si des candidats existent déjà
+        cur.execute("SELECT COUNT(*) FROM candidates")
+        count = cur.fetchone()['count']
+        
+        if count == 0:
+            # Insérer les candidats par défaut
+            cur.execute("""
+                INSERT INTO candidates (id, nom, categorie, img) VALUES
+                ('miss1', 'Fatou Diop', 'miss', 'Photo/miss1.jpg'),
+                ('miss2', 'Aïcha Sow', 'miss', 'Photo/miss2.jpg'),
+                ('miss3', 'Mariam Diallo', 'miss', 'Photo/miss3.jpg'),
+                ('mister1', 'Mamadou Fall', 'mister', 'Photo/mister1.jpg'),
+                ('mister2', 'Ibrahima Ndiaye', 'mister', 'Photo/mister2.jpg'),
+                ('mister3', 'Abdoulaye Diop', 'mister', 'Photo/mister3.jpg')
+            """)
+            print(f"✅ {cur.rowcount} candidats insérés par défaut")
+        else:
+            print(f"✅ {count} candidats existent déjà")
+        
+        conn.commit()
+        print("🎉 Initialisation de la base de données terminée avec succès !")
+        
+    except Exception as e:
+        print(f"❌ Erreur lors de l'initialisation: {e}")
+        if conn:
+            conn.rollback()
+        # Ne pas bloquer l'application si l'init échoue
+    finally:
+        if conn:
+            conn.close()
+
+# ========== FONCTION PRINCIPALE DE CONNEXION ==========
+def get_db():
+    """Obtient une connexion à la base de données."""
+    try:
+        conn = psycopg.connect(**DB_CONFIG, row_factory=dict_row)
         return conn
     except Exception as e:
         print(f"Erreur de connexion à la base de données: {e}")
         raise
 
+# ========== ROUTES API ==========
 @app.route('/api/candidates', methods=['GET'])
 def get_candidates():
     try:
         conn = get_db()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        # Extraire le numéro du candidat depuis l'ID (ex: '26miss1' -> '1', '26mister4' -> '4')
+        cur = conn.cursor()
         cur.execute("""
             SELECT *, 
                    CAST(REGEXP_REPLACE(id, '[^0-9]', '', 'g') AS INTEGER) as candidate_number
@@ -48,7 +139,7 @@ def get_candidates():
 def get_candidates_by_category(categorie):
     try:
         conn = get_db()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur = conn.cursor()
         cur.execute("""
             SELECT *, 
                    CAST(REGEXP_REPLACE(id, '[^0-9]', '', 'g') AS INTEGER) as candidate_number
@@ -81,7 +172,7 @@ def submit_vote():
         conn = get_db()
         cur = conn.cursor()
         
-        # Vérifier si le code de transaction existe déjà (insensible à la casse)
+        # Vérifier si le code de transaction existe déjà
         cur.execute("""
             SELECT id, candidate_id, statut, created_at 
             FROM transactions 
@@ -107,7 +198,7 @@ def submit_vote():
             RETURNING id
         """, (candidate_id, payment_method, transaction_code, vote_count, amount))
         
-        transaction_id = cur.fetchone()[0]
+        transaction_id = cur.fetchone()['id']
         conn.commit()
         
         cur.close()
@@ -118,28 +209,17 @@ def submit_vote():
             'transaction_id': transaction_id
         }), 201
         
-    except psycopg.errors.UniqueViolation as e:
-        print(f"Violation de contrainte unique: {e}")
-        if 'conn' in locals():
-            conn.rollback()
-        return jsonify({
-            'error': 'Code de transaction déjà utilisé',
-            'exists': True
-        }), 409
     except Exception as e:
         print(f"Erreur dans submit_vote: {e}")
         if 'conn' in locals():
             conn.rollback()
-            cur.close()
-            conn.close()
-        return jsonify({'error': 'Erreur de connexion à la base de données'}), 500
+        return jsonify({'error': f'Erreur: {str(e)}'}), 500
 
-# Nouvel endpoint pour vérifier un code de transaction
 @app.route('/api/check-transaction/<code>', methods=['GET'])
 def check_transaction_code(code):
     try:
         conn = get_db()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur = conn.cursor()
         
         cur.execute("""
             SELECT t.*, c.nom as candidate_name
@@ -176,7 +256,6 @@ def admin_login():
     if not password:
         return jsonify({'error': 'Mot de passe requis'}), 400
     
-    # Mot de passe simple pour la démo
     if password == '2025':
         return jsonify({'message': 'Connexion réussie', 'token': 'admin_token'}), 200
     else:
@@ -186,7 +265,7 @@ def admin_login():
 def get_pending_transactions():
     try:
         conn = get_db()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur = conn.cursor()
         cur.execute("""
             SELECT t.*, c.nom as candidate_name,
                    c.categorie as candidate_category,
@@ -216,7 +295,7 @@ def validate_transaction(transaction_id):
         if not result:
             return jsonify({'error': 'Transaction non trouvée'}), 404
         
-        candidate_id, vote_count = result
+        candidate_id, vote_count = result['candidate_id'], result['nombre_votes']
         
         cur.execute("UPDATE candidates SET votes = votes + %s WHERE id = %s", (vote_count, candidate_id))
         cur.execute("UPDATE transactions SET statut = 'validated', validated_at = %s WHERE id = %s", (datetime.now(), transaction_id))
@@ -229,8 +308,6 @@ def validate_transaction(transaction_id):
         print(f"Erreur dans validate_transaction: {e}")
         if 'conn' in locals():
             conn.rollback()
-            cur.close()
-            conn.close()
         return jsonify({'error': 'Erreur de connexion à la base de données'}), 500
 
 @app.route('/api/admin/transactions/<int:transaction_id>/reject', methods=['POST'])
@@ -248,15 +325,13 @@ def reject_transaction(transaction_id):
         print(f"Erreur dans reject_transaction: {e}")
         if 'conn' in locals():
             conn.rollback()
-            cur.close()
-            conn.close()
         return jsonify({'error': 'Erreur de connexion à la base de données'}), 500
 
 @app.route('/api/ranking', methods=['GET'])
 def get_ranking():
     try:
         conn = get_db()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur = conn.cursor()
         cur.execute("""
             SELECT *, 
                    CAST(REGEXP_REPLACE(id, '[^0-9]', '', 'g') AS INTEGER) as candidate_number,
@@ -278,23 +353,19 @@ def get_stats():
         conn = get_db()
         cur = conn.cursor()
         
-        # Nombre total de candidats
         cur.execute("SELECT COUNT(*) FROM candidates")
-        total_candidates = cur.fetchone()[0]
+        total_candidates = cur.fetchone()['count']
         
-        # Total des votes
         cur.execute("SELECT SUM(votes) FROM candidates")
-        total_votes = cur.fetchone()[0] or 0
+        total_votes = cur.fetchone()['sum'] or 0
         
-        # Transactions par statut
         cur.execute("SELECT statut, COUNT(*) FROM transactions GROUP BY statut")
         transactions_stats = cur.fetchall()
         
         cur.close()
         conn.close()
         
-        # Convertir en dictionnaire
-        transactions_dict = {status: count for status, count in transactions_stats}
+        transactions_dict = {item['statut']: item['count'] for item in transactions_stats}
         
         return jsonify({
             'total_candidates': total_candidates,
@@ -307,8 +378,13 @@ def get_stats():
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """Endpoint pour vérifier la santé de l'API et de la BD"""
     try:
+        # Tenter d'initialiser la base au premier appel
+        try:
+            init_database()
+        except:
+            pass
+            
         conn = get_db()
         cur = conn.cursor()
         cur.execute("SELECT 1")
@@ -317,6 +393,8 @@ def health_check():
         return jsonify({'status': 'healthy', 'database': 'connected'}), 200
     except Exception as e:
         return jsonify({'status': 'unhealthy', 'database': 'disconnected', 'error': str(e)}), 500
+
+# ========== ROUTES POUR LE FRONTEND ==========
 @app.route('/')
 def serve_index():
     return send_from_directory('static', 'index.html')
@@ -325,7 +403,21 @@ def serve_index():
 def serve_static(path):
     return send_from_directory('static', path)
 
-# Modifiez la dernière ligne pour la production
+# ========== DÉMARRAGE DE L'APPLICATION ==========
 if __name__ == '__main__':
+    # Initialiser la base au démarrage
+    print("🚀 Démarrage de l'application Miss & Mister...")
+    try:
+        init_database()
+    except Exception as e:
+        print(f"⚠️ Note lors de l'initialisation: {e}")
+    
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+else:
+    # Pour gunicorn (production)
+    print("🚀 Application chargée par gunicorn...")
+    try:
+        init_database()
+    except Exception as e:
+        print(f"⚠️ Note: {e}")
