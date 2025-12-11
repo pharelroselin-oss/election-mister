@@ -4,7 +4,7 @@ from flask_cors import CORS
 import psycopg
 from psycopg.rows import dict_row
 from psycopg import sql
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import mimetypes
 
@@ -17,16 +17,19 @@ CORS(app, resources={
     }
 })
 
-# ========== CONFIGURATION AVEC URL DIRECTE ==========
+# ========== CONFIGURATION ==========
 DATABASE_URL = os.getenv('DATABASE_URL', 
     'postgresql://election_user:uIvD4UaRMcqngNl3Re643KySUFvhnRF0@dpg-d4tf1uchg0os73ct4gi0-a.oregon-postgres.render.com/election_k6jj'
 )
 
-# ========== FONCTION D'INITIALISATION DE LA BASE ==========
+# Date limite du vote (20 décembre 2025, 21h00, heure du Cameroun - UTC+1)
+VOTE_DEADLINE = datetime(2025, 12, 20, 21, 0, 0)  # 21h00 heure Cameroun
+
+# ========== FONCTION D'INITIALISATION ==========
 def init_database():
     """Initialise la base de données"""
     
-    print("🔧 Tentative d'initialisation de la base de données...")
+    print("🔧 Initialisation de la base de données...")
     
     try:
         conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
@@ -75,7 +78,7 @@ def init_database():
         count = cur.fetchone()['count']
         
         if count == 0:
-            # Insérer les candidats par défaut
+            # Insérer les candidats par défaut avec correction des chemins
             cur.execute("""
                 INSERT INTO candidates (id, nom, categorie, img) VALUES
                 ('miss1', 'LOVE NDAZOO', 'miss', 'miss_1.jpg'),
@@ -94,11 +97,19 @@ def init_database():
             """)
             print(f"✅ {cur.rowcount} candidats insérés par défaut")
         else:
+            # Corriger les chemins existants si nécessaire
+            cur.execute("""
+                UPDATE candidates 
+                SET img = REPLACE(img, 'Photo/', '')
+                WHERE img LIKE 'Photo/%'
+            """)
+            if cur.rowcount > 0:
+                print(f"✅ {cur.rowcount} chemins d'images corrigés")
+            
             print(f"✅ {count} candidats existent déjà")
         
         conn.commit()
-        print("🎉 Initialisation de la base de données terminée avec succès !")
-        
+        print("🎉 Initialisation terminée avec succès !")
         return True
         
     except Exception as e:
@@ -117,6 +128,20 @@ def get_db():
     except Exception as e:
         print(f"Erreur de connexion à la base de données: {e}")
         raise
+
+# ========== GESTIONNAIRES D'ERREURS ==========
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'error': 'Endpoint non trouvé'}), 404
+
+@app.errorhandler(500)
+def server_error(error):
+    return jsonify({'error': 'Erreur serveur interne'}), 500
+
+@app.errorhandler(Exception)
+def handle_exception(error):
+    print(f"Erreur non gérée: {error}")
+    return jsonify({'error': 'Erreur interne du serveur'}), 500
 
 # ========== ROUTES API ==========
 @app.route('/api/candidates', methods=['GET'])
@@ -160,6 +185,13 @@ def get_candidates_by_category(categorie):
 
 @app.route('/api/vote', methods=['POST'])
 def submit_vote():
+    # Vérifier si la date limite est dépassée
+    now = datetime.now(timezone.utc)
+    deadline_utc = VOTE_DEADLINE.replace(tzinfo=timezone.utc)
+    
+    if now > deadline_utc:
+        return jsonify({'error': 'La période de vote est terminée'}), 400
+    
     data = request.json
     candidate_id = data.get('candidate_id')
     payment_method = data.get('payment_method')
@@ -370,14 +402,46 @@ def get_stats():
         
         transactions_dict = {item['statut']: item['count'] for item in transactions_stats}
         
+        # Calculer le temps restant
+        now = datetime.now(timezone.utc)
+        deadline_utc = VOTE_DEADLINE.replace(tzinfo=timezone.utc)
+        time_remaining = max(0, (deadline_utc - now).total_seconds())
+        
         return jsonify({
             'total_candidates': total_candidates,
             'total_votes': total_votes,
-            'transactions': transactions_dict
+            'transactions': transactions_dict,
+            'deadline': VOTE_DEADLINE.isoformat(),
+            'time_remaining': time_remaining,
+            'vote_active': time_remaining > 0
         })
     except Exception as e:
         print(f"Erreur dans get_stats: {e}")
         return jsonify({'error': 'Erreur de connexion à la base de données'}), 500
+
+@app.route('/api/deadline', methods=['GET'])
+def get_deadline():
+    """Récupérer les informations sur la date limite"""
+    now = datetime.now(timezone.utc)
+    deadline_utc = VOTE_DEADLINE.replace(tzinfo=timezone.utc)
+    time_remaining = max(0, (deadline_utc - now).total_seconds())
+    
+    # Calculer les jours, heures, minutes, secondes
+    days = int(time_remaining // (24 * 3600))
+    hours = int((time_remaining % (24 * 3600)) // 3600)
+    minutes = int((time_remaining % 3600) // 60)
+    seconds = int(time_remaining % 60)
+    
+    return jsonify({
+        'deadline': VOTE_DEADLINE.isoformat(),
+        'time_remaining': time_remaining,
+        'days': days,
+        'hours': hours,
+        'minutes': minutes,
+        'seconds': seconds,
+        'vote_active': time_remaining > 0,
+        'now': now.isoformat()
+    })
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -409,12 +473,13 @@ def test_endpoint():
     return jsonify({
         'message': 'API Miss & Mister fonctionnelle',
         'timestamp': datetime.now().isoformat(),
-        'service': 'Miss & Mister AHN 2025'
+        'service': 'Miss & Mister AHN 2025',
+        'deadline': VOTE_DEADLINE.isoformat()
     }), 200
 
 @app.route('/api/debug/files', methods=['GET'])
 def debug_files():
-    """Débogage complet des fichiers"""
+    """Débogage des fichiers"""
     base_dir = Path(__file__).parent.absolute()
     static_dir = base_dir / 'static'
     photo_dir = static_dir / 'photo'
@@ -424,112 +489,107 @@ def debug_files():
         'static_dir': {
             'path': str(static_dir),
             'exists': static_dir.exists(),
-            'is_dir': static_dir.is_dir() if static_dir.exists() else False
         },
         'photo_dir': {
             'path': str(photo_dir),
             'exists': photo_dir.exists(),
-            'is_dir': photo_dir.is_dir() if photo_dir.exists() else False,
             'files': []
-        },
-        'test_urls': []
+        }
     }
     
-    # Liste des fichiers dans photo
-    if photo_dir.exists() and photo_dir.is_dir():
+    if photo_dir.exists():
         try:
-            files = os.listdir(photo_dir)
-            for file in files:
+            for file in os.listdir(photo_dir):
                 file_path = photo_dir / file
-                result['photo_dir']['files'].append({
-                    'name': file,
-                    'path': str(file_path),
-                    'exists': file_path.exists(),
-                    'is_file': file_path.is_file(),
-                    'size': file_path.stat().st_size if file_path.exists() and file_path.is_file() else 0,
-                    'extension': Path(file).suffix.lower()
-                })
+                if file_path.is_file():
+                    result['photo_dir']['files'].append({
+                        'name': file,
+                        'size': file_path.stat().st_size,
+                        'is_image': file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif'))
+                    })
         except Exception as e:
             result['photo_dir']['error'] = str(e)
     
-    # Générer les URLs de test
-    test_images = ['miss_1.jpg', 'mass_1.jpg', 'miss_2.jpg', 'mass_2.jpg']
-    for img in test_images:
-        result['test_urls'].append({
-            'filename': img,
-            'url': f'/static/photo/{img}',
-            'full_url': f'http://localhost:5000/static/photo/{img}'
-        })
-    
     return jsonify(result)
 
-@app.route('/api/debug/test-image/<filename>', methods=['GET'])
-def test_image(filename):
-    """Tester une image spécifique"""
-    photo_dir = Path(__file__).parent.absolute() / 'static' / 'photo'
-    file_path = photo_dir / filename
-    
-    response = {
-        'filename': filename,
-        'requested_path': str(file_path),
-        'exists': file_path.exists(),
-        'is_file': file_path.is_file() if file_path.exists() else False
-    }
-    
-    if file_path.exists() and file_path.is_file():
-        try:
-            response['size'] = file_path.stat().st_size
-            response['content_type'] = mimetypes.guess_type(str(file_path))[0]
-            
-            # Essayer de lire le fichier
-            with open(file_path, 'rb') as f:
-                header = f.read(100)
-                response['header_hex'] = header.hex()[:50]
-                
-                # Vérifier si c'est une image valide
-                if header.startswith(b'\xff\xd8\xff'):
-                    response['image_type'] = 'JPEG'
-                elif header.startswith(b'\x89PNG\r\n\x1a\n'):
-                    response['image_type'] = 'PNG'
-                else:
-                    response['image_type'] = 'Unknown'
-                    
-        except Exception as e:
-            response['error'] = str(e)
-    
-    return jsonify(response)
+@app.route('/api/fix-images', methods=['GET'])
+def fix_images():
+    """Corriger les chemins d'images dans la base"""
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            UPDATE candidates 
+            SET img = REPLACE(img, 'Photo/', '')
+            WHERE img LIKE 'Photo/%'
+        """)
+        
+        updated_count = cur.rowcount
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': f'{updated_count} chemins d\'images corrigés'
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # ========== ROUTES POUR LES IMAGES ==========
 @app.route('/static/photo/<path:filename>')
 def serve_image(filename):
-    """Servir les images - Version robuste"""
+    """Servir les images avec gestion des anciens chemins"""
     try:
+        # CORRECTION : Enlever 'Photo/' du début si présent
+        original_filename = filename
+        if filename.startswith('Photo/'):
+            filename = filename[6:]  # Enlève 'Photo/'
+            print(f"🔄 Correction chemin: {original_filename} -> {filename}")
+        
         # Chemin absolu
         base_dir = Path(__file__).parent.absolute()
         photo_dir = base_dir / 'static' / 'photo'
         file_path = photo_dir / filename
         
-        print(f"🔍 Tentative de chargement: {filename}")
-        print(f"📁 Dossier photo: {photo_dir}")
-        print(f"📄 Chemin complet: {file_path}")
-        print(f"📄 Existe: {file_path.exists()}")
+        if not file_path.exists():
+            # Essayer aussi avec différentes variations
+            variations = [
+                filename,
+                filename.lower(),
+                filename.upper(),
+                filename.replace('_', ' '),
+                filename.replace(' ', '_')
+            ]
+            
+            for var in variations:
+                test_path = photo_dir / var
+                if test_path.exists():
+                    file_path = test_path
+                    filename = var
+                    print(f"🔄 Trouvé avec variation: {var}")
+                    break
         
         if not file_path.exists():
-            print(f"❌ Fichier non trouvé: {filename}")
-            return jsonify({'error': f'Fichier {filename} non trouvé', 'path': str(file_path)}), 404
-        
-        if not file_path.is_file():
-            print(f"❌ N'est pas un fichier: {filename}")
-            return jsonify({'error': f'{filename} n\'est pas un fichier'}), 400
+            print(f"❌ Image non trouvée: {filename}")
+            # Retourner une image par défaut (silhouette)
+            from flask import Response
+            import base64
+            
+            # Image SVG par défaut (silhouette neutre)
+            svg_default = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <circle cx="50" cy="35" r="20" fill="#3b6bf0"/>
+                <path d="M30,70 Q50,100 70,70" fill="#3b6bf0"/>
+            </svg>'''
+            
+            return Response(svg_default, mimetype='image/svg+xml')
         
         # Déterminer le type MIME
         mime_type, _ = mimetypes.guess_type(str(file_path))
         if not mime_type:
-            mime_type = 'application/octet-stream'
+            mime_type = 'image/jpeg'
         
-        print(f"✅ Fichier trouvé: {filename} ({file_path.stat().st_size} bytes, {mime_type})")
-        
-        # Servir le fichier avec les bons headers
         return send_file(
             str(file_path),
             mimetype=mime_type,
@@ -538,15 +598,13 @@ def serve_image(filename):
         )
         
     except Exception as e:
-        print(f"❌ Erreur serveur image pour {filename}: {str(e)}")
+        print(f"❌ Erreur image {filename}: {str(e)}")
         return jsonify({'error': str(e), 'filename': filename}), 500
 
-# Route de secours pour les anciens chemins
+# Routes de compatibilité pour anciens chemins
 @app.route('/photo/<path:filename>')
 @app.route('/Photo/<path:filename>')
 def serve_image_old(filename):
-    """Rediriger les anciens chemins vers le nouveau"""
-    print(f"🔄 Redirection ancien chemin: {filename} -> /static/photo/{filename}")
     return serve_image(filename)
 
 # ========== ROUTES POUR LE FRONTEND ==========
@@ -560,8 +618,9 @@ def serve_static(path):
 
 # ========== DÉMARRAGE DE L'APPLICATION ==========
 if __name__ == '__main__':
-    print("🚀 Démarrage de l'application Miss & Mister...")
+    print("🚀 Démarrage de l'application Miss & Mister AHN 2025...")
     print(f"📁 Dossier courant: {Path(__file__).parent.absolute()}")
+    print(f"⏰ Date limite des votes: {VOTE_DEADLINE}")
     
     # Vérifier la structure
     base_dir = Path(__file__).parent.absolute()
@@ -572,14 +631,10 @@ if __name__ == '__main__':
     print(f"📁 Photo dir: {photo_dir} - Existe: {photo_dir.exists()}")
     
     if photo_dir.exists():
-        images = []
-        for ext in ['.jpg', '.jpeg', '.png', '.gif']:
-            images.extend(list(photo_dir.glob(f'*{ext}')))
-            images.extend(list(photo_dir.glob(f'*{ext.upper()}')))
-        
-        print(f"📸 Images trouvées ({len(images)}):")
-        for img in images:
-            print(f"   - {img.name} ({img.stat().st_size} bytes)")
+        images = [f for f in os.listdir(photo_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png', '.gif'))]
+        print(f"📸 Images trouvées: {len(images)}")
+        if images:
+            print(f"   Exemples: {images[:3]}...")
     
     # Initialiser la base
     try:
@@ -589,7 +644,7 @@ if __name__ == '__main__':
     
     port = int(os.environ.get('PORT', 5000))
     print(f"🌐 Serveur démarré sur http://localhost:{port}")
-    print(f"🔗 Testez une image: http://localhost:{port}/static/photo/miss_1.jpg")
+    print(f"🔗 Test images: http://localhost:{port}/static/photo/miss_1.jpg")
     app.run(host='0.0.0.0', port=port, debug=True)
 else:
     print("🚀 Application chargée en production...")
@@ -597,4 +652,3 @@ else:
         init_database()
     except Exception as e:
         print(f"⚠️ Note: {e}")
-        
