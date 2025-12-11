@@ -1,11 +1,12 @@
 import os
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 import psycopg
 from psycopg.rows import dict_row
 from psycopg import sql
 from datetime import datetime
 from pathlib import Path
+import mimetypes
 
 app = Flask(__name__, static_folder='static')
 CORS(app, resources={
@@ -26,10 +27,8 @@ def init_database():
     """Initialise la base de données"""
     
     print("🔧 Tentative d'initialisation de la base de données...")
-    print(f"📊 URL de base de données: {DATABASE_URL[:50]}...")  # Affiche les premiers caractères seulement
     
     try:
-        # Utiliser l'URL de connexion directement
         conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
         cur = conn.cursor()
         
@@ -66,18 +65,9 @@ def init_database():
         print("✅ Table 'transactions' vérifiée/créée")
         
         # 3. Créer les indexes
-        cur.execute("""
-            CREATE INDEX IF NOT EXISTS idx_transactions_code_normalized 
-            ON transactions(code_transaction_normalized)
-        """)
-        cur.execute("""
-            CREATE INDEX IF NOT EXISTS idx_transactions_status 
-            ON transactions(statut)
-        """)
-        cur.execute("""
-            CREATE INDEX IF NOT EXISTS idx_transactions_candidate 
-            ON transactions(candidate_id)
-        """)
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_transactions_code_normalized ON transactions(code_transaction_normalized)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(statut)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_transactions_candidate ON transactions(candidate_id)")
         print("✅ Indexes vérifiés/créés")
         
         # 4. Vérifier si des candidats existent déjà
@@ -85,7 +75,7 @@ def init_database():
         count = cur.fetchone()['count']
         
         if count == 0:
-            # Insérer les candidats par défaut avec noms de fichiers simples
+            # Insérer les candidats par défaut
             cur.execute("""
                 INSERT INTO candidates (id, nom, categorie, img) VALUES
                 ('miss1', 'LOVE NDAZOO', 'miss', 'miss_1.jpg'),
@@ -127,20 +117,6 @@ def get_db():
     except Exception as e:
         print(f"Erreur de connexion à la base de données: {e}")
         raise
-
-# ========== GESTIONNAIRES D'ERREURS ==========
-@app.errorhandler(404)
-def not_found(error):
-    return jsonify({'error': 'Endpoint non trouvé'}), 404
-
-@app.errorhandler(500)
-def server_error(error):
-    return jsonify({'error': 'Erreur serveur interne'}), 500
-
-@app.errorhandler(Exception)
-def handle_exception(error):
-    print(f"Erreur non gérée: {error}")
-    return jsonify({'error': 'Erreur interne du serveur'}), 500
 
 # ========== ROUTES API ==========
 @app.route('/api/candidates', methods=['GET'])
@@ -406,7 +382,6 @@ def get_stats():
 @app.route('/api/health', methods=['GET'])
 def health_check():
     try:
-        # Tenter d'initialiser la base si ce n'est pas déjà fait
         success = init_database()
             
         conn = get_db()
@@ -431,99 +406,150 @@ def health_check():
 
 @app.route('/api/test', methods=['GET'])
 def test_endpoint():
-    """Endpoint de test pour vérifier que l'API fonctionne"""
     return jsonify({
         'message': 'API Miss & Mister fonctionnelle',
         'timestamp': datetime.now().isoformat(),
         'service': 'Miss & Mister AHN 2025'
     }), 200
 
-@app.route('/api/debug', methods=['GET'])
-def debug_info():
-    """Endpoint de débogage"""
-    # Masquer le mot de passe dans l'URL
-    safe_url = DATABASE_URL
-    if '@' in safe_url:
-        parts = safe_url.split('@')
-        if ':' in parts[0]:
-            user_pass = parts[0].split(':')
-            if len(user_pass) == 3:  # postgresql://user:password@host
-                safe_url = f"postgresql://{user_pass[0]}:***@{parts[1]}"
-            elif len(user_pass) == 2:
-                safe_url = f"postgresql://{user_pass[0]}:***@{parts[1]}"
-    
-    return jsonify({
-        'database_url': safe_url,
-        'has_database_url': 'YES' if DATABASE_URL else 'NO',
-        'env_variables': {
-            'DATABASE_URL': 'SET' if os.getenv('DATABASE_URL') else 'NOT SET',
-            'RENDER': 'SET' if os.getenv('RENDER') else 'NOT SET'
-        }
-    }), 200
-
 @app.route('/api/debug/files', methods=['GET'])
 def debug_files():
-    """Débogage des fichiers et dossiers"""
+    """Débogage complet des fichiers"""
     base_dir = Path(__file__).parent.absolute()
+    static_dir = base_dir / 'static'
+    photo_dir = static_dir / 'photo'
     
     result = {
         'current_dir': str(base_dir),
-        'files_in_root': [],
-        'static_dir_exists': False,
-        'static_dir_contents': [],
-        'photo_dir_exists': False,
-        'photo_dir_contents': []
+        'static_dir': {
+            'path': str(static_dir),
+            'exists': static_dir.exists(),
+            'is_dir': static_dir.is_dir() if static_dir.exists() else False
+        },
+        'photo_dir': {
+            'path': str(photo_dir),
+            'exists': photo_dir.exists(),
+            'is_dir': photo_dir.is_dir() if photo_dir.exists() else False,
+            'files': []
+        },
+        'test_urls': []
     }
     
-    # Lister les fichiers à la racine
-    try:
-        for item in os.listdir(base_dir):
-            item_path = base_dir / item
-            result['files_in_root'].append({
-                'name': item,
-                'is_dir': item_path.is_dir(),
-                'size': item_path.stat().st_size if item_path.is_file() else 0
-            })
-    except Exception as e:
-        result['error_root'] = str(e)
-    
-    # Vérifier le dossier static
-    static_dir = base_dir / 'static'
-    result['static_dir_path'] = str(static_dir)
-    result['static_dir_exists'] = static_dir.exists()
-    
-    if static_dir.exists():
+    # Liste des fichiers dans photo
+    if photo_dir.exists() and photo_dir.is_dir():
         try:
-            for item in os.listdir(static_dir):
-                item_path = static_dir / item
-                result['static_dir_contents'].append({
-                    'name': item,
-                    'is_dir': item_path.is_dir(),
-                    'size': item_path.stat().st_size if item_path.is_file() else 0
+            files = os.listdir(photo_dir)
+            for file in files:
+                file_path = photo_dir / file
+                result['photo_dir']['files'].append({
+                    'name': file,
+                    'path': str(file_path),
+                    'exists': file_path.exists(),
+                    'is_file': file_path.is_file(),
+                    'size': file_path.stat().st_size if file_path.exists() and file_path.is_file() else 0,
+                    'extension': Path(file).suffix.lower()
                 })
         except Exception as e:
-            result['error_static'] = str(e)
+            result['photo_dir']['error'] = str(e)
     
-    # Vérifier le dossier photo dans static
-    photo_dir = static_dir / 'photo'
-    result['photo_dir_path'] = str(photo_dir)
-    result['photo_dir_exists'] = photo_dir.exists()
-    
-    if photo_dir.exists():
-        try:
-            for item in os.listdir(photo_dir):
-                item_path = photo_dir / item
-                result['photo_dir_contents'].append({
-                    'name': item,
-                    'size': item_path.stat().st_size if item_path.is_file() else 0,
-                    'is_image': item.lower().endswith(('.jpg', '.jpeg', '.png', '.gif'))
-                })
-        except Exception as e:
-            result['error_photo'] = str(e)
+    # Générer les URLs de test
+    test_images = ['miss_1.jpg', 'mass_1.jpg', 'miss_2.jpg', 'mass_2.jpg']
+    for img in test_images:
+        result['test_urls'].append({
+            'filename': img,
+            'url': f'/static/photo/{img}',
+            'full_url': f'http://localhost:5000/static/photo/{img}'
+        })
     
     return jsonify(result)
 
-# ========== ROUTES POUR LE FRONTEND ET LES IMAGES ==========
+@app.route('/api/debug/test-image/<filename>', methods=['GET'])
+def test_image(filename):
+    """Tester une image spécifique"""
+    photo_dir = Path(__file__).parent.absolute() / 'static' / 'photo'
+    file_path = photo_dir / filename
+    
+    response = {
+        'filename': filename,
+        'requested_path': str(file_path),
+        'exists': file_path.exists(),
+        'is_file': file_path.is_file() if file_path.exists() else False
+    }
+    
+    if file_path.exists() and file_path.is_file():
+        try:
+            response['size'] = file_path.stat().st_size
+            response['content_type'] = mimetypes.guess_type(str(file_path))[0]
+            
+            # Essayer de lire le fichier
+            with open(file_path, 'rb') as f:
+                header = f.read(100)
+                response['header_hex'] = header.hex()[:50]
+                
+                # Vérifier si c'est une image valide
+                if header.startswith(b'\xff\xd8\xff'):
+                    response['image_type'] = 'JPEG'
+                elif header.startswith(b'\x89PNG\r\n\x1a\n'):
+                    response['image_type'] = 'PNG'
+                else:
+                    response['image_type'] = 'Unknown'
+                    
+        except Exception as e:
+            response['error'] = str(e)
+    
+    return jsonify(response)
+
+# ========== ROUTES POUR LES IMAGES ==========
+@app.route('/static/photo/<path:filename>')
+def serve_image(filename):
+    """Servir les images - Version robuste"""
+    try:
+        # Chemin absolu
+        base_dir = Path(__file__).parent.absolute()
+        photo_dir = base_dir / 'static' / 'photo'
+        file_path = photo_dir / filename
+        
+        print(f"🔍 Tentative de chargement: {filename}")
+        print(f"📁 Dossier photo: {photo_dir}")
+        print(f"📄 Chemin complet: {file_path}")
+        print(f"📄 Existe: {file_path.exists()}")
+        
+        if not file_path.exists():
+            print(f"❌ Fichier non trouvé: {filename}")
+            return jsonify({'error': f'Fichier {filename} non trouvé', 'path': str(file_path)}), 404
+        
+        if not file_path.is_file():
+            print(f"❌ N'est pas un fichier: {filename}")
+            return jsonify({'error': f'{filename} n\'est pas un fichier'}), 400
+        
+        # Déterminer le type MIME
+        mime_type, _ = mimetypes.guess_type(str(file_path))
+        if not mime_type:
+            mime_type = 'application/octet-stream'
+        
+        print(f"✅ Fichier trouvé: {filename} ({file_path.stat().st_size} bytes, {mime_type})")
+        
+        # Servir le fichier avec les bons headers
+        return send_file(
+            str(file_path),
+            mimetype=mime_type,
+            as_attachment=False,
+            download_name=filename
+        )
+        
+    except Exception as e:
+        print(f"❌ Erreur serveur image pour {filename}: {str(e)}")
+        return jsonify({'error': str(e), 'filename': filename}), 500
+
+# Route de secours pour les anciens chemins
+@app.route('/photo/<path:filename>')
+@app.route('/Photo/<path:filename>')
+def serve_image_old(filename):
+    """Rediriger les anciens chemins vers le nouveau"""
+    print(f"🔄 Redirection ancien chemin: {filename} -> /static/photo/{filename}")
+    return serve_image(filename)
+
+# ========== ROUTES POUR LE FRONTEND ==========
 @app.route('/')
 def serve_index():
     return send_from_directory('static', 'index.html')
@@ -532,53 +558,40 @@ def serve_index():
 def serve_static(path):
     return send_from_directory('static', path)
 
-# ROUTE POUR LES IMAGES - CORRIGÉE
-@app.route('/static/photo/<path:filename>')
-def serve_image(filename):
-    """Servir les images du dossier static/photo"""
-    try:
-        # Vérifier si le fichier existe
-        file_path = Path(app.static_folder) / 'photo' / filename
-        if file_path.exists():
-            print(f"✅ Image trouvée: {filename}")
-            return send_from_directory('static/photo', filename)
-        else:
-            print(f"❌ Image non trouvée: {filename}")
-            return jsonify({'error': f'Image {filename} non trouvée dans static/photo'}), 404
-    except Exception as e:
-        print(f"❌ Erreur serveur image: {e}")
-        return jsonify({'error': str(e)}), 500
-
 # ========== DÉMARRAGE DE L'APPLICATION ==========
 if __name__ == '__main__':
     print("🚀 Démarrage de l'application Miss & Mister...")
-    print(f"📁 Dossier static: {app.static_folder}")
+    print(f"📁 Dossier courant: {Path(__file__).parent.absolute()}")
     
     # Vérifier la structure
-    print("📂 Vérification de la structure des dossiers...")
     base_dir = Path(__file__).parent.absolute()
     static_dir = base_dir / 'static'
     photo_dir = static_dir / 'photo'
     
-    print(f"📁 Base dir: {base_dir}")
     print(f"📁 Static dir: {static_dir} - Existe: {static_dir.exists()}")
     print(f"📁 Photo dir: {photo_dir} - Existe: {photo_dir.exists()}")
     
     if photo_dir.exists():
-        images = [f for f in os.listdir(photo_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png', '.gif'))]
-        print(f"📸 Images trouvées ({len(images)}): {images}")
+        images = []
+        for ext in ['.jpg', '.jpeg', '.png', '.gif']:
+            images.extend(list(photo_dir.glob(f'*{ext}')))
+            images.extend(list(photo_dir.glob(f'*{ext.upper()}')))
+        
+        print(f"📸 Images trouvées ({len(images)}):")
+        for img in images:
+            print(f"   - {img.name} ({img.stat().st_size} bytes)")
     
-    # Initialiser la base au démarrage
+    # Initialiser la base
     try:
         init_database()
     except Exception as e:
-        print(f"⚠️ Note lors de l'initialisation: {e}")
+        print(f"⚠️ Note: {e}")
     
     port = int(os.environ.get('PORT', 5000))
-    print(f"🌐 Serveur démarré sur le port {port}")
+    print(f"🌐 Serveur démarré sur http://localhost:{port}")
+    print(f"🔗 Testez une image: http://localhost:{port}/static/photo/miss_1.jpg")
     app.run(host='0.0.0.0', port=port, debug=True)
 else:
-    # Pour gunicorn (production)
     print("🚀 Application chargée en production...")
     try:
         init_database()
