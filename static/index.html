@@ -1517,14 +1517,8 @@ document.getElementById('admin-login').addEventListener('click', async () => {
       const error = await result.json();
       alert('Erreur: ' + (error.error || 'Mot de passe incorrect'));
     }
-  } catch (error) {
-    if (password === '2025') {
-      adminToken = 'local_token';
-      document.getElementById('admin-content').style.display = 'block';
-      refreshPendingTransactions();
-    } else {
-      alert('Mot de passe incorrect');
-    }
+    } catch (error) {
+    alert('Connexion impossible. Vérifiez votre connexion internet.');
   }
 });
 
@@ -1720,3 +1714,4 @@ window.addEventListener('beforeunload', (e) => {
 </script>
 </body>
 </html>
+
