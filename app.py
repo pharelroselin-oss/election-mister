@@ -382,6 +382,31 @@ def get_ranking():
         print(f"Erreur dans get_ranking: {e}")
         return jsonify({'error': 'Erreur de connexion à la base de données'}), 500
 
+@app.route('/api/ranking/<categorie>', methods=['GET'])
+def get_ranking_by_category(categorie):
+    """Récupérer le classement par catégorie (miss ou mister)"""
+    if categorie not in ['miss', 'mister']:
+        return jsonify({'error': 'Catégorie invalide. Utilisez "miss" ou "mister"'}), 400
+    
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT *, 
+                   CAST(REGEXP_REPLACE(id, '[^0-9]', '', 'g') AS INTEGER) as candidate_number,
+                   ROW_NUMBER() OVER (ORDER BY votes DESC, nom) as rank_position
+            FROM candidates 
+            WHERE categorie = %s
+            ORDER BY votes DESC, nom
+        """, (categorie,))
+        ranking = cur.fetchall()
+        cur.close()
+        conn.close()
+        return jsonify(ranking)
+    except Exception as e:
+        print(f"Erreur dans get_ranking_by_category: {e}")
+        return jsonify({'error': 'Erreur de connexion à la base de données'}), 500
+
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
     try:
@@ -652,4 +677,3 @@ else:
         init_database()
     except Exception as e:
         print(f"⚠️ Note: {e}")
-
