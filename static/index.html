@@ -1291,6 +1291,7 @@ async function loadRanking() {
   try {
     const ranking = await fetchAPI('/ranking');
     displayRanking(ranking);
+    await loadGenderRanking();
   } catch (error) {
     console.log('Classement:', error);
     updateRanking();
@@ -1306,7 +1307,7 @@ function updateRanking() {
       candidate_number: c.candidate_number || extractCandidateNumber(c.id)
     }));
   displayRanking(ranking);
-  displayGenderRanking();
+  loadGenderRanking();
 }
 
 function displayRanking(ranking) {
@@ -1343,31 +1344,48 @@ function displayRanking(ranking) {
 // ============================
 // CLASSEMENT PAR GENRE
 // ============================
-function displayGenderRanking() {
-  // Séparer les candidats par genre
-  const missCandidates = allCandidates
-    .filter(c => c.categorie === 'miss')
-    .sort((a, b) => (b.votes || 0) - (a.votes || 0))
-    .map((c, i) => ({
-      ...c,
-      rank_position: i + 1,
-      candidate_number: c.candidate_number || extractCandidateNumber(c.id)
-    }));
-  
-  const misterCandidates = allCandidates
-    .filter(c => c.categorie === 'mister')
-    .sort((a, b) => (b.votes || 0) - (a.votes || 0))
-    .map((c, i) => ({
-      ...c,
-      rank_position: i + 1,
-      candidate_number: c.candidate_number || extractCandidateNumber(c.id)
-    }));
-  
-  // Afficher le classement Miss
-  displayRankingByGender(missCandidates, 'miss-ranking');
-  
-  // Afficher le classement Mister
-  displayRankingByGender(misterCandidates, 'mister-ranking');
+async function loadGenderRanking() {
+  try {
+    if (isDatabaseConnected) {
+      // Charger les classements depuis l'API
+      const [missRanking, misterRanking] = await Promise.all([
+        fetchAPI('/ranking/miss'),
+        fetchAPI('/ranking/mister')
+      ]);
+      
+      displayRankingByGender(missRanking, 'miss-ranking');
+      displayRankingByGender(misterRanking, 'mister-ranking');
+    } else {
+      // Mode hors-ligne : utiliser les données locales
+      const missCandidates = allCandidates
+        .filter(c => c.categorie === 'miss')
+        .sort((a, b) => (b.votes || 0) - (a.votes || 0))
+        .map((c, i) => ({
+          ...c,
+          rank_position: i + 1,
+          candidate_number: c.candidate_number || extractCandidateNumber(c.id)
+        }));
+      
+      const misterCandidates = allCandidates
+        .filter(c => c.categorie === 'mister')
+        .sort((a, b) => (b.votes || 0) - (a.votes || 0))
+        .map((c, i) => ({
+          ...c,
+          rank_position: i + 1,
+          candidate_number: c.candidate_number || extractCandidateNumber(c.id)
+        }));
+      
+      displayRankingByGender(missCandidates, 'miss-ranking');
+      displayRankingByGender(misterCandidates, 'mister-ranking');
+    }
+  } catch (error) {
+    console.log('Erreur chargement classement par genre:', error);
+    // Afficher message d'erreur
+    document.getElementById('miss-ranking').innerHTML = 
+      '<div class="loading">Erreur de chargement</div>';
+    document.getElementById('mister-ranking').innerHTML = 
+      '<div class="loading">Erreur de chargement</div>';
+  }
 }
 
 function displayRankingByGender(ranking, containerId) {
@@ -1375,7 +1393,7 @@ function displayRankingByGender(ranking, containerId) {
   
   if (!container) return;
   
-  if (ranking.length > 0) {
+  if (ranking && ranking.length > 0) {
     const maxVotes = Math.max(...ranking.map(c => c.votes || 0), 1);
     
     container.innerHTML = ranking.map(c => {
