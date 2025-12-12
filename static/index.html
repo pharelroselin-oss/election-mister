@@ -368,6 +368,20 @@ header.hero {
   color: var(--accent-3);
 }
 
+/* EXCEPTION UNIQUEMENT POUR L'IMAGE MASS_3 */
+.thumb img[src*="/static/photo/mass_3.jpg"],
+.thumb img[src$="mass_3.jpg"],
+.thumb img[alt*="ULRICH MBAKONG"] { /* Ciblage par nom aussi */
+  object-position: 25% 20% !important; /* Haut gauche */
+  transform: translate(-50%, -45%) scale(1.1) !important; /* Remonté */
+}
+
+.candidate:hover .thumb img[src*="/static/photo/mass_3.jpg"],
+.candidate:hover .thumb img[src$="mass_3.jpg"],
+.candidate:hover .thumb img[alt*="ULRICH MBAKONG"] {
+  transform: translate(-50%, -45%) scale(1.15) !important;
+}
+
 /* ====== BOUTONS RESPONSIVE ====== */
 .actions {
   display: flex;
