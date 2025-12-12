@@ -961,10 +961,28 @@ footer a:hover {
 <div class="candidates" id="mister-list">
   <div class="loading"><div class="loading-spinner"></div>Chargement des candidats...</div>
 </div>
-<h2 style="color:var(--accent-3);margin-top:32px;">🏆 Classement en temps réel</h2>
-<div id="ranking">
-  <div class="loading"><div class="loading-spinner"></div>Calcul du classement...</div>
+
+<div id="ranking-section">
+  <h2 style="color:var(--accent-3);margin-top:32px;">🏆 Classement général</h2>
+  <div id="ranking">
+    <div class="loading">Calcul du classement...</div>
+  </div>
+  
+  <div style="margin-top:40px;">
+    <h2 style="color:#ff3c78;margin-bottom:20px;">👑 Classement des Candidates Miss</h2>
+    <div id="miss-ranking">
+      <div class="loading">Calcul du classement Miss...</div>
+    </div>
+  </div>
+  
+  <div style="margin-top:40px;">
+    <h2 style="color:#3b6bf0;margin-bottom:20px;">🤵 Classement des Candidats Mister</h2>
+    <div id="mister-ranking">
+      <div class="loading">Calcul du classement Mister...</div>
+    </div>
+  </div>
 </div>
+
 </div>
 </main>
 </div>
@@ -986,7 +1004,7 @@ footer a:hover {
 <select id="payment-method">
 <option value="orange_money">Orange Money</option>
 </select>
-<div id="payment-number">Numéro Orange Money : #150*46*0761200#</div>
+<div id="payment-number">Numéro Orange Money : #150*46*0761200#    NGNEJEUCHOM NOUPELE MAURICE RAYANN</div>
 <label>Code transaction :</label>
 <input type="text" id="payment-code" placeholder="Entrez le code reçu par SMS" autocomplete="off">
 <button id="submit-payment">✅ Envoyer pour validation</button>
@@ -1288,6 +1306,7 @@ function updateRanking() {
       candidate_number: c.candidate_number || extractCandidateNumber(c.id)
     }));
   displayRanking(ranking);
+  displayGenderRanking();
 }
 
 function displayRanking(ranking) {
@@ -1318,6 +1337,78 @@ function displayRanking(ranking) {
     }).join('');
   } else {
     rankingDiv.innerHTML = '<div class="loading">Aucun vote pour le moment</div>';
+  }
+}
+
+// ============================
+// CLASSEMENT PAR GENRE
+// ============================
+function displayGenderRanking() {
+  // Séparer les candidats par genre
+  const missCandidates = allCandidates
+    .filter(c => c.categorie === 'miss')
+    .sort((a, b) => (b.votes || 0) - (a.votes || 0))
+    .map((c, i) => ({
+      ...c,
+      rank_position: i + 1,
+      candidate_number: c.candidate_number || extractCandidateNumber(c.id)
+    }));
+  
+  const misterCandidates = allCandidates
+    .filter(c => c.categorie === 'mister')
+    .sort((a, b) => (b.votes || 0) - (a.votes || 0))
+    .map((c, i) => ({
+      ...c,
+      rank_position: i + 1,
+      candidate_number: c.candidate_number || extractCandidateNumber(c.id)
+    }));
+  
+  // Afficher le classement Miss
+  displayRankingByGender(missCandidates, 'miss-ranking');
+  
+  // Afficher le classement Mister
+  displayRankingByGender(misterCandidates, 'mister-ranking');
+}
+
+function displayRankingByGender(ranking, containerId) {
+  const container = document.getElementById(containerId);
+  
+  if (!container) return;
+  
+  if (ranking.length > 0) {
+    const maxVotes = Math.max(...ranking.map(c => c.votes || 0), 1);
+    
+    container.innerHTML = ranking.map(c => {
+      const percentage = ((c.votes || 0) / maxVotes) * 100;
+      return `
+        <div class="ranking-item">
+          <div class="ranking-info">
+            <span class="ranking-rank ${c.rank_position <= 3 ? 'rank-' + c.rank_position : ''}">
+              ${c.rank_position}
+            </span>
+            <span class="ranking-candidate-number">N°${c.candidate_number}</span>
+            <strong>${c.nom}</strong>
+            <span style="margin-left:auto;color:var(--accent-2);font-weight:bold;">
+              ${c.votes || 0} votes
+            </span>
+          </div>
+          <div class="ranking-bar-container">
+            <div class="ranking-bar" style="width:${percentage}%; 
+                  ${c.rank_position === 1 ? 'background: linear-gradient(90deg, #ffd700, #ffed4e);' : 
+                    c.rank_position === 2 ? 'background: linear-gradient(90deg, #c0c0c0, #e0e0e0);' : 
+                    c.rank_position === 3 ? 'background: linear-gradient(90deg, #cd7f32, #e6a157);' : 
+                    'background: linear-gradient(90deg, var(--accent-2), var(--accent-1));'}">
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } else {
+    container.innerHTML = `
+      <div style="text-align:center;padding:20px;color:#666;">
+        Aucun vote pour le moment
+      </div>
+    `;
   }
 }
 
@@ -1714,4 +1805,3 @@ window.addEventListener('beforeunload', (e) => {
 </script>
 </body>
 </html>
-
