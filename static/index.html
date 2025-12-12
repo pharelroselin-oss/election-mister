@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-<title>Miss & Mister Arts et Humanités Numériques 2025 — Vote</title>
+<title>Miss & Mister Arts et Humanités Numériques 2026 — Vote</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ====== RESET ET VARIABLES GLOBALES ====== */
@@ -847,7 +847,7 @@ footer a:hover {
 
 <div class="page">
 <header class="hero">
-<h1>Miss & Mister AHN 2025</h1>
+<h1>Miss & Mister AHN 2026</h1>
 <div class="subtitle">Votez pour vos candidats préférés ! Chaque vote compte</div>
 <div class="meta">
 <div>🎭 <strong id="candidates-count">0</strong> Candidats</div>
@@ -899,7 +899,7 @@ footer a:hover {
 <div class="candidates" id="miss-list">
   <div class="loading"><div class="loading-spinner"></div>Chargement des candidates...</div>
 </div>
-<h2 style="color:var(--accent-2);margin-top:32px;margin-bottom:12px;">🤵 Candidates Mister</h2>
+<h2 style="color:var(--accent-2);margin-top:32px;margin-bottom:12px;">🤵 Candidats Mister</h2>
 <div class="candidates" id="mister-list">
   <div class="loading"><div class="loading-spinner"></div>Chargement des candidats...</div>
 </div>
@@ -911,12 +911,9 @@ footer a:hover {
 </main>
 </div>
 <footer>
-<div>© Comité de Parrainage Arts et Humanités Numériques 2025</div>
+<div>© Comité de Parrainage Arts et Humanités Numériques 2030</div>
 <div style="margin-top:10px;font-size:0.9rem;color:#666;">
-  Date limite : 20 décembre 2025 à 21h00 (Heure Cameroun) • 
-  <a href="https://election-mister.onrender.com/api/debug/files" style="color:var(--accent-2);" target="_blank">📁 Vérifier les fichiers</a> • 
-  <a href="https://election-mister.onrender.com/api/fix-images" style="color:var(--accent-2);" target="_blank">🖼️ Corriger images</a>
-</div>
+  Date limite : 20 décembre 2025 à 21h00 (Heure Cameroun)
 </footer>
 </div>
 
@@ -1289,9 +1286,9 @@ function openPaymentModal(candidateId) {
   }
   
   currentCandidateId = candidateId;
-  document.getElementById('vote-count').value = 1;
+  document.getElementById('vote-count').value;
   document.getElementById('payment-code').value = '';
-  document.getElementById('payment-amount').value = PRICE_PER_VOTE + ' FCFA';
+  document.getElementById('payment-amount').value = ' 0 FCFA';
   updatePaymentNumber();
   document.getElementById('payment-modal').style.display = 'flex';
   document.getElementById('payment-code').focus();
