@@ -936,8 +936,7 @@ footer a:hover {
 <div class="modal-content">
 <h3>💰 Paiement pour le vote</h3>
 <label>Nombre de votes :</label>
-<input type="number" id="vote-count" min="1" value="1">
-<label>Montant à payer :</label>
+<input type="number" id="vote-count" min="0" value="0" placeholder="0"><label>Montant à payer :</label>
 <input type="text" id="payment-amount" value="100 FCFA" readonly>
 <label>Moyen de paiement :</label>
 <select id="payment-method">
@@ -1314,11 +1313,29 @@ function closePaymentModal() {
 }
 
 document.getElementById('vote-count').addEventListener('input', function() {
-  let count = parseInt(this.value);
-  if (count < 1) count = 1;
-  if (count > 100) count = 100;
-  this.value = count;
-  document.getElementById('payment-amount').value = (count * PRICE_PER_VOTE) + " FCFA";
+  let count = parseInt(this.value) || 0;
+  
+  // Autoriser 0 et supprimer le contenu
+  if (count < 0) count = 0;
+  
+  // Limite supérieure raisonnable (10000000000 votes max)
+  if (count > 10000000000) count = 10000000000;
+  
+  this.value = count === 0 ? '' : count; // Vide si 0
+  document.getElementById('payment-amount').value = 
+    count === 0 ? '0 FCFA' : (count * PRICE_PER_VOTE) + " FCFA";
+});
+
+// Ajouter aussi pour gérer la touche Delete/Backspace
+document.getElementById('vote-count').addEventListener('keydown', function(e) {
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    setTimeout(() => {
+      this.value = this.value === '' ? '' : this.value;
+      const count = parseInt(this.value) || 0;
+      document.getElementById('payment-amount').value = 
+        count === 0 ? '0 FCFA' : (count * PRICE_PER_VOTE) + " FCFA";
+    }, 10);
+  }
 });
 
 function updatePaymentNumber() {
