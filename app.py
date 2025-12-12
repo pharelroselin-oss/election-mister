@@ -291,7 +291,7 @@ def admin_login():
     if not password:
         return jsonify({'error': 'Mot de passe requis'}), 400
     
-    if password == '2025':
+    if password == 'Moj@0.wAY,4IT0':
         return jsonify({'message': 'Connexion réussie', 'token': 'admin_token'}), 200
     else:
         return jsonify({'error': 'Mot de passe incorrect'}), 401
@@ -641,7 +641,7 @@ if __name__ == '__main__':
         init_database()
     except Exception as e:
         print(f"⚠️ Note: {e}")
-    
+
     port = int(os.environ.get('PORT', 5000))
     print(f"🌐 Serveur démarré sur http://localhost:{port}")
     print(f"🔗 Test images: http://localhost:{port}/static/photo/miss_1.jpg")
@@ -652,3 +652,4 @@ else:
         init_database()
     except Exception as e:
         print(f"⚠️ Note: {e}")
+
