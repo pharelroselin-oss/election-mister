@@ -368,18 +368,16 @@ header.hero {
   color: var(--accent-3);
 }
 
-/* EXCEPTION UNIQUEMENT POUR L'IMAGE MASS_3 */
-.thumb img[src*="/static/photo/mass_3.jpg"],
-.thumb img[src$="mass_3.jpg"],
-.thumb img[alt*="ULRICH MBAKONG"] { /* Ciblage par nom aussi */
-  object-position: 10% 7% !important; /* Haut gauche */
-  transform: translate(-50%, -45%) scale(1.1) !important; /* Remonté */
-}
-
-.candidate:hover .thumb img[src*="/static/photo/mass_3.jpg"],
-.candidate:hover .thumb img[src$="mass_3.jpg"],
-.candidate:hover .thumb img[alt*="ULRICH MBAKONG"] {
-  transform: translate(-50%, -45%) scale(1.15) !important;
+/* VERSION NUKE - On force le visage en haut à gauche */
+.thumb img[src*="mass_3"] {
+  object-position: -15% -15% !important;
+  transform: translate(-25%, -20%) scale(1.8) !important;
+  transform-origin: top left !important;
+  width: 160% !important;
+  height: 160% !important;
+  position: absolute !important;
+  top: -10% !important;
+  left: -10% !important;
 }
 
 /* ====== BOUTONS RESPONSIVE ====== */
