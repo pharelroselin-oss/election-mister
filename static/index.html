@@ -117,6 +117,46 @@ header.hero {
   overflow: hidden;
 }
 
+/* ====== LOGO SITE ====== */
+.logo-container {
+  margin-bottom: clamp(1rem, 3vw, 1.5rem);
+  text-align: center;
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.site-logo {
+  height: clamp(60px, 12vw, 90px);
+  width: auto;
+  max-width: min(300px, 80vw);
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
+  border-radius: 12px;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.site-logo:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.35));
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ajustement pour mobile */
+@media (max-width: 480px) {
+  .site-logo {
+    height: clamp(50px, 10vw, 70px);
+  }
+}
+
 @keyframes gradientBG {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -862,6 +902,10 @@ footer a:hover {
 <div class="page">
 <header class="hero">
 <h1>Miss & Mister AHN 2026</h1>
+<div class="logo-container">
+  <img src="/static/photo/logo.jpg" alt="Logo AHN" class="site-logo">
+</div>
+
 <div class="subtitle">Votez pour vos candidats préférés ! Chaque vote compte</div>
 <div class="meta">
 <div>🎭 <strong id="candidates-count">0</strong> Candidats</div>
@@ -942,7 +986,6 @@ footer a:hover {
 <select id="payment-method">
 <option value="orange_money">Orange Money</option>
 <option value="mtn_money">MTN Money</option>
-<option value="wave">Wave</option>
 </select>
 <div id="payment-number">Numéro Orange Money : #150*46*0761200#</div>
 <label>Code transaction :</label>
@@ -1344,7 +1387,6 @@ function updatePaymentNumber() {
   switch(method) {
     case 'orange_money': number = '#150*46*0761200#'; break;
     case 'mtn_money': number = '#556#'; break;
-    case 'wave': number = '+221 78 123 45 67'; break;
     default: number = '#150*46*0761200#';
   }
   document.getElementById('payment-number').textContent = 'Numéro ' + method.replace('_', ' ') + ' : ' + number;
