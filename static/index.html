@@ -985,7 +985,6 @@ footer a:hover {
 <label>Moyen de paiement :</label>
 <select id="payment-method">
 <option value="orange_money">Orange Money</option>
-<option value="mtn_money">MTN Money</option>
 </select>
 <div id="payment-number">Numéro Orange Money : #150*46*0761200#</div>
 <label>Code transaction :</label>
@@ -1386,7 +1385,6 @@ function updatePaymentNumber() {
   let number = '';
   switch(method) {
     case 'orange_money': number = '#150*46*0761200#'; break;
-    case 'mtn_money': number = '#556#'; break;
     default: number = '#150*46*0761200#';
   }
   document.getElementById('payment-number').textContent = 'Numéro ' + method.replace('_', ' ') + ' : ' + number;
@@ -1722,4 +1720,3 @@ window.addEventListener('beforeunload', (e) => {
 </script>
 </body>
 </html>
-
