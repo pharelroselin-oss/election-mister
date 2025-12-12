@@ -368,28 +368,19 @@ header.hero {
   color: var(--accent-3);
 }
 
-/* EXCEPTION UNIQUEMENT POUR L'IMAGE MASS_3 - VERSION EXTRÊME HAUT GAUCHE */
+/* EXCEPTION UNIQUEMENT POUR L'IMAGE MASS_3 */
 .thumb img[src*="/static/photo/mass_3.jpg"],
 .thumb img[src$="mass_3.jpg"],
-.thumb img[alt*="ULRICH MBAKONG"] {
-  /* Position extrême haut-gauche : 10% depuis le haut, 10% depuis la gauche */
-  object-position: 10% 10% !important;
-  
-  /* Décalage important vers le haut-gauche */
-  transform: translate(-45%, -40%) scale(1.2) !important;
-  
-  /* Zoom plus important pour compenser le décalage */
-  transform-origin: top left !important;
+.thumb img[alt*="ULRICH MBAKONG"] { /* Ciblage par nom aussi */
+  object-position: 10% 10% !important; /* Haut gauche */
+  transform: translate(-40%, -40%) scale(1.1) !important; /* Remonté */
 }
 
 .candidate:hover .thumb img[src*="/static/photo/mass_3.jpg"],
 .candidate:hover .thumb img[src$="mass_3.jpg"],
 .candidate:hover .thumb img[alt*="ULRICH MBAKONG"] {
-  /* En hover, on accentue encore le décalage */
-  object-position: 5% 5% !important;
-  transform: translate(-45%, -40%) scale(1.25) !important;
+  transform: translate(-40%, -40%) scale(1.15) !important;
 }
-
 
 /* ====== BOUTONS RESPONSIVE ====== */
 .actions {
@@ -1672,3 +1663,5 @@ window.addEventListener('beforeunload', (e) => {
 </script>
 </body>
 </html>
+
+/* ====== CONTENEUR IMAGE PERFECT ====== */
