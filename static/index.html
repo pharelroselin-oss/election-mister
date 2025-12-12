@@ -6,6 +6,56 @@
 <title>Miss & Mister Arts et Humanités Numériques 2026 — Vote</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+
+/* ====== LIEN APPEL TELEPHONE ====== */
+#payment-number a {
+  font-weight: bold;
+  color: var(--accent-2);
+  text-decoration: none;
+  background: #f0f7ff;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 2px solid var(--accent-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  margin-top: 5px;
+  font-size: 1.05rem;
+}
+
+#payment-number a:hover {
+  background: var(--accent-2);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(59, 107, 240, 0.3);
+}
+
+#payment-number a:active {
+  transform: translateY(0);
+}
+
+/* Animation pulsante pour attirer l'attention */
+@keyframes pulseCall {
+  0% { box-shadow: 0 0 0 0 rgba(59, 107, 240, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(59, 107, 240, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 107, 240, 0); }
+}
+
+#payment-number a.pulse {
+  animation: pulseCall 2s infinite;
+}
+
+/* Sur mobile */
+@media (max-width: 480px) {
+  #payment-number a {
+    padding: 10px 18px;
+    font-size: 1.1rem;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* ====== RESET ET VARIABLES GLOBALES ====== */
 :root {
   --bg: #f4f7fb;
@@ -944,8 +994,16 @@ footer a:hover {
 <option value="mtn_money">MTN Money</option>
 <option value="wave">Wave</option>
 </select>
-<div id="payment-number">Numéro Orange Money : #150*46*0761200#</div>
-<label>Code transaction :</label>
+<div id="payment-number">
+  Numéro Orange Money : 
+  <a href="tel:*150*46*0761200%23" 
+     style="font-weight:bold;color:var(--accent-2);text-decoration:none;background:#f0f7ff;padding:6px 12px;border-radius:8px;border:2px solid var(--accent-2);display:inline-flex;align-items:center;gap:6px;">
+    📞 #150*46*0761200#
+  </a>
+  <small style="display:block;margin-top:6px;color:#666;font-size:0.85rem;">
+    Cliquez pour composer automatiquement dans votre application Téléphone
+  </small>
+</div><label>Code transaction :</label>
 <input type="text" id="payment-code" placeholder="Entrez le code reçu par SMS" autocomplete="off">
 <button id="submit-payment">✅ Envoyer pour validation</button>
 <button style="background:#eee;color:#333;" onclick="closePaymentModal()">❌ Annuler</button>
@@ -1680,3 +1738,4 @@ window.addEventListener('beforeunload', (e) => {
 </script>
 </body>
 </html>
+
