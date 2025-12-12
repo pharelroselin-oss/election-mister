@@ -368,19 +368,28 @@ header.hero {
   color: var(--accent-3);
 }
 
-/* EXCEPTION UNIQUEMENT POUR L'IMAGE MASS_3 */
+/* EXCEPTION UNIQUEMENT POUR L'IMAGE MASS_3 - VERSION EXTRÊME HAUT GAUCHE */
 .thumb img[src*="/static/photo/mass_3.jpg"],
 .thumb img[src$="mass_3.jpg"],
-.thumb img[alt*="ULRICH MBAKONG"] { /* Ciblage par nom aussi */
-  object-position: 25% 20% !important; /* Haut gauche */
-  transform: translate(-50%, -45%) scale(1.1) !important; /* Remonté */
+.thumb img[alt*="ULRICH MBAKONG"] {
+  /* Position extrême haut-gauche : 10% depuis le haut, 10% depuis la gauche */
+  object-position: 10% 10% !important;
+  
+  /* Décalage important vers le haut-gauche */
+  transform: translate(-45%, -40%) scale(1.2) !important;
+  
+  /* Zoom plus important pour compenser le décalage */
+  transform-origin: top left !important;
 }
 
 .candidate:hover .thumb img[src*="/static/photo/mass_3.jpg"],
 .candidate:hover .thumb img[src$="mass_3.jpg"],
 .candidate:hover .thumb img[alt*="ULRICH MBAKONG"] {
-  transform: translate(-50%, -45%) scale(1.15) !important;
+  /* En hover, on accentue encore le décalage */
+  object-position: 5% 5% !important;
+  transform: translate(-45%, -40%) scale(1.25) !important;
 }
+
 
 /* ====== BOUTONS RESPONSIVE ====== */
 .actions {
