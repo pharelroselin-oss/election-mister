@@ -1089,7 +1089,7 @@ function updateConnectionStatus(connected) {
     warning.style.display = 'none';
   } else {
     badge.className = 'status-badge offline';
-    badge.textContent = '⚠️ Mode local';
+    badge.textContent = '⚠️ Hors-Ligne';
     warning.style.display = 'block';
   }
 }
@@ -1300,7 +1300,7 @@ function openPaymentModal(candidateId) {
   }
   
   currentCandidateId = candidateId;
-  document.getElementById('vote-count').value;
+  document.getElementById('vote-count').value='';
   document.getElementById('payment-code').value = '';
   document.getElementById('payment-amount').value = ' 0 FCFA';
   updatePaymentNumber();
@@ -1314,7 +1314,7 @@ function closePaymentModal() {
 }
 
 document.getElementById('vote-count').addEventListener('input', function() {
-  let count = parseInt(this.value) || 1;
+  let count = parseInt(this.value);
   if (count < 1) count = 1;
   if (count > 100) count = 100;
   this.value = count;
