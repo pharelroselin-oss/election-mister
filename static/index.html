@@ -2,174 +2,843 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <title>Miss & Mister Arts et Humanités Numériques 2025 — Vote</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#f4f7fb; --card:#ffffff; --muted:#6b7280;
-  --accent-1:#ff7a00; --accent-2:#3b6bf0; --accent-3:#ff3c78;
-  --glass:rgba(255,255,255,0.85); --shadow:rgba(0,0,0,0.12);
+/* ====== RESET ET VARIABLES GLOBALES ====== */
+:root {
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --accent-1: #ff7a00;
+  --accent-2: #3b6bf0;
+  --accent-3: #ff3c78;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --glass: rgba(255, 255, 255, 0.85);
+  --shadow-sm: rgba(0, 0, 0, 0.05);
+  --shadow-md: rgba(0, 0, 0, 0.1);
+  --shadow-lg: rgba(0, 0, 0, 0.15);
+  --shadow-xl: rgba(0, 0, 0, 0.2);
+  
+  /* Tailles responsives */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Breakpoints */
+  --bp-mobile: 320px;
+  --bp-phablet: 480px;
+  --bp-tablet: 768px;
+  --bp-laptop: 1024px;
+  --bp-desktop: 1280px;
 }
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
-body{background:var(--bg);color:#0f172a;}
-.page{max-width:1200px;margin:0 auto;padding:20px;}
-header.hero{
-  position:relative; border-radius:24px; padding:60px 20px;
-  text-align:center; color:white;
-  background:linear-gradient(135deg,var(--accent-1),var(--accent-2),var(--accent-3),var(--accent-1));
-  background-size:400% 400%; animation:gradientBG 15s ease infinite;
-  box-shadow:0 12px 40px rgba(0,0,0,0.2); margin-bottom:20px;
-}
-@keyframes gradientBG{
-  0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}
-}
-.hero h1{font-size:2.8rem;margin-bottom:12px;text-shadow:0 3px 12px rgba(0,0,0,0.25);}
-.hero .subtitle{font-size:1.3rem;color:rgba(255,255,255,0.9);margin-bottom:15px;}
-.hero .meta{display:flex;justify-content:center;gap:40px;font-weight:700;font-size:1.1rem;margin-bottom:20px;}
 
-/* Compte à rebours */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: #0f172a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ====== TYPOGRAPHIE RESPONSIVE ====== */
+h1, h2, h3, h4 {
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 5vw, 2.8rem);
+  margin-bottom: var(--space-sm);
+}
+
+h2 {
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
+  margin-bottom: var(--space-md);
+}
+
+h3 {
+  font-size: clamp(1rem, 3vw, 1.25rem);
+}
+
+.subtitle {
+  font-size: clamp(0.9rem, 3vw, 1.3rem);
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: var(--space-lg);
+}
+
+/* ====== LAYOUT RESPONSIVE ====== */
+.page {
+  max-width: min(1200px, 95vw);
+  margin: 0 auto;
+  padding: clamp(0.75rem, 3vw, 1.25rem);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1rem, 3vw, 1.5rem);
+  margin-top: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+/* ====== HERO RESPONSIVE ====== */
+header.hero {
+  position: relative;
+  border-radius: clamp(16px, 4vw, 24px);
+  padding: clamp(2rem, 6vw, 3.75rem) clamp(1rem, 4vw, 1.25rem);
+  text-align: center;
+  color: white;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2), var(--accent-3), var(--accent-1));
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  box-shadow: 0 clamp(8px, 2vw, 12px) clamp(20px, 4vw, 40px) var(--shadow-xl);
+  margin-bottom: clamp(1rem, 3vw, 1.25rem);
+  overflow: hidden;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.hero .meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(1rem, 4vw, 2.5rem);
+  font-weight: 700;
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  margin-bottom: clamp(1rem, 3vw, 1.25rem);
+}
+
+/* ====== COMPTE À REBOURS ULTRA RESPONSIVE ====== */
 .countdown-container {
-  background:rgba(255,255,255,0.15); backdrop-filter:blur(10px);
-  border-radius:16px; padding:20px; margin:20px auto; max-width:600px;
-  border:2px solid rgba(255,255,255,0.2);
-}
-.countdown-title {
-  font-size:1.2rem; margin-bottom:15px; font-weight:600;
-  display:flex; align-items:center; justify-content:center; gap:10px;
-}
-.countdown-grid {
-  display:grid; grid-template-columns:repeat(4, 1fr); gap:15px;
-}
-.countdown-item {
-  background:rgba(255,255,255,0.2); border-radius:12px; padding:15px;
-  text-align:center; backdrop-filter:blur(5px); border:1px solid rgba(255,255,255,0.1);
-}
-.countdown-value {
-  font-size:2.5rem; font-weight:800; line-height:1;
-  text-shadow:0 2px 8px rgba(0,0,0,0.3);
-}
-.countdown-label {
-  font-size:0.9rem; margin-top:5px; opacity:0.9;
-}
-.vote-ended {
-  background:rgba(220,53,69,0.2); border:2px solid #dc3545;
-  padding:20px; border-radius:16px; margin:20px auto; max-width:600px;
-  text-align:center; font-weight:600; font-size:1.2rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: clamp(12px, 3vw, 16px);
+  padding: clamp(1rem, 3vw, 1.25rem);
+  margin: clamp(1rem, 3vw, 1.25rem) auto;
+  max-width: min(600px, 90vw);
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.admin-btn{
-  position:absolute;top:20px;right:20px; background:rgba(255,255,255,0.25);
-  backdrop-filter:blur(6px); border:none;color:white; padding:12px 20px;
-  border-radius:14px; font-weight:700;cursor:pointer; transition:0.3s;
+.countdown-title {
+  font-size: clamp(0.9rem, 3vw, 1.2rem);
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.5rem, 2vw, 0.625rem);
 }
-.admin-btn:hover{background:rgba(255,255,255,0.4);transform:scale(1.05);}
-.grid{display:grid;grid-template-columns:1fr;gap:24px;margin-top:40px;}
-.card{background:var(--card);border-radius:20px;padding:32px;box-shadow:0 12px 36px var(--shadow);}
-.candidates{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:24px;}
-.candidate{
-  background:#fff;border-radius:20px;overflow:hidden; box-shadow:0 8px 20px var(--shadow);
-  display:flex;flex-direction:column; transition:transform 0.4s,box-shadow 0.4s; position:relative;
+
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(0.5rem, 2vw, 0.9375rem);
 }
-.candidate:hover{transform:translateY(-12px);box-shadow:0 20px 40px var(--shadow);}
-.thumb{width:100%;height:240px;background:#eef6ff;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-.thumb img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s;}
-.candidate:hover .thumb img{transform:scale(1.07);}
-.info{padding:20px;flex:1;display:flex;flex-direction:column;justify-content:space-between;}
-.info h3{font-size:1.2rem;margin-bottom:8px;display:flex;flex-direction:column;gap:5px;}
-.number-badge{background:var(--accent-1);color:white;padding:4px 12px;border-radius:12px;font-size:0.9rem;font-weight:bold;display:inline-block;}
-.votes-badge{margin-top:6px;font-weight:700;color:var(--accent-2);transition:transform 0.3s,color 0.3s;}
-.votes-badge.animate{transform:scale(1.3);color:var(--accent-3);}
-.actions{display:flex;justify-content:flex-end;margin-top:16px;}
-.vote-btn{
-  padding:12px 18px; background:linear-gradient(90deg,var(--accent-1),var(--accent-3));
-  border:none;color:white;font-weight:700;border-radius:14px;cursor:pointer;transition:all 0.3s;
+
+@media (max-width: 480px) {
+  .countdown-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
-.vote-btn:hover{transform:scale(1.05);box-shadow:0 8px 16px rgba(0,0,0,0.2);}
-.vote-btn:disabled{background:#ccc;cursor:not-allowed;transform:none;box-shadow:none;}
-#ranking{margin-top:32px;}
-.ranking-item{
-  margin-bottom:16px; padding:12px; background:#fff; border-radius:12px;
-  box-shadow:0 4px 12px var(--shadow); transition:all 0.5s;
+
+.countdown-item {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: clamp(8px, 2vw, 12px);
+  padding: clamp(0.75rem, 2vw, 0.9375rem);
+  text-align: center;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
-.ranking-info{display:flex;align-items:center;margin-bottom:5px;}
-.ranking-rank{
-  display:inline-block; width:32px;height:32px; background:var(--accent-1); color:white;
-  border-radius:50%; text-align:center; line-height:32px; margin-right:10px;
-  font-weight:bold; font-size:1rem;
+
+.countdown-value {
+  font-size: clamp(1.5rem, 6vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.5px;
 }
-.ranking-rank.rank-1{background:#ffd700;color:#000;}
-.ranking-rank.rank-2{background:#c0c0c0;color:#000;}
-.ranking-rank.rank-3{background:#cd7f32;color:#000;}
-.ranking-candidate-number{
-  background:var(--accent-2); color:white; padding:3px 8px; border-radius:8px;
-  font-size:0.8rem; margin-right:8px; font-weight:bold;
+
+.countdown-label {
+  font-size: clamp(0.7rem, 2vw, 0.9rem);
+  margin-top: clamp(0.25rem, 1vw, 0.3125rem);
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-.ranking-bar-container{width:100%;height:14px;background:#e9ecef;border-radius:8px;overflow:hidden;margin-top:5px;}
-.ranking-bar{height:100%;background:var(--accent-2);border-radius:8px;transition:width 1s;}
-.candidate-number{
-  position:absolute; top:10px;left:10px; background:var(--accent-1); color:white;
-  width:36px;height:36px; border-radius:50%; display:flex; align-items:center;
-  justify-content:center; font-weight:bold; font-size:1.1rem;
-  box-shadow:0 4px 8px rgba(0,0,0,0.2); z-index:10;
+
+.vote-ended {
+  background: rgba(220, 53, 69, 0.2);
+  border: 2px solid var(--danger);
+  padding: clamp(1rem, 3vw, 1.25rem);
+  border-radius: clamp(12px, 3vw, 16px);
+  margin: clamp(1rem, 3vw, 1.25rem) auto;
+  max-width: min(600px, 90vw);
+  text-align: center;
+  font-weight: 600;
+  font-size: clamp(0.9rem, 3vw, 1.2rem);
 }
-#payment-modal,#admin-panel{
-  position:fixed;top:0;left:0;width:100%;height:100%; background:rgba(0,0,0,0.55);
-  display:none; align-items:center;justify-content:center;z-index:9999;
-  animation:fadeIn 0.3s;
+
+/* ====== CARTES CANDIDATS RESPONSIVE ====== */
+.card {
+  background: var(--card);
+  border-radius: clamp(16px, 3vw, 20px);
+  padding: clamp(1rem, 3vw, 2rem);
+  box-shadow: 0 clamp(8px, 2vw, 12px) clamp(24px, 4vw, 36px) var(--shadow-md);
 }
-@keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
-.modal-content{
-  background:white;width:450px;padding:32px;border-radius:20px;
-  box-shadow:0 20px 40px rgba(0,0,0,0.25); max-width:90%;
+
+.candidates {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: clamp(1rem, 3vw, 1.5rem);
 }
-.modal-content h3{margin-bottom:18px;color:var(--accent-2);}
-.modal-content label{margin-top:12px;display:block;font-weight:600;}
-.modal-content input,.modal-content select{
-  width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;margin-bottom:10px;
+
+@media (max-width: 480px) {
+  .candidates {
+    grid-template-columns: 1fr;
+  }
 }
-.modal-content button{
-  padding:12px 18px;width:100%;border-radius:14px;border:none;
-  background:var(--accent-2);color:white;font-weight:700;cursor:pointer;
-  transition:all 0.3s;margin-top:10px;
+
+.candidate {
+  background: #fff;
+  border-radius: clamp(12px, 3vw, 20px);
+  overflow: hidden;
+  box-shadow: 0 clamp(4px, 1vw, 8px) clamp(12px, 2vw, 20px) var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  height: 100%;
+  min-height: 380px;
 }
-.modal-content button:hover{transform:scale(1.05);}
-.admin-section{margin-top:20px;max-height:450px;overflow-y:auto;}
-.admin-card{
-  margin-bottom:14px;padding:12px;border:1px solid #eee;border-radius:12px;
-  display:flex;justify-content:space-between;align-items:center;transition:all 0.3s;
+
+.candidate:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 clamp(12px, 2vw, 20px) clamp(24px, 4vw, 40px) var(--shadow-lg);
 }
-.admin-card button{padding:8px 14px;border:none;background:var(--accent-2);color:white;border-radius:10px;cursor:pointer;margin-left:8px;transition:0.3s;}
-.admin-card button.reject{background:#ff3c3c;}
-#payment-number{margin-bottom:10px;font-weight:600;}
-footer{text-align:center;margin-top:40px;color:var(--muted);padding:20px;border-top:1px solid #eee;}
-.loading{text-align:center;padding:40px;color:var(--muted);}
-.loading-spinner{
-  border:4px solid #f3f3f3;border-top:4px solid var(--accent-2);border-radius:50%;
-  width:40px;height:40px;animation:spin 1s linear infinite;margin:0 auto 20px;
+
+/* ====== CONTENEUR IMAGE PERFECT ====== */
+.thumb {
+  width: 100%;
+  height: clamp(220px, 50vw, 280px);
+  min-height: 220px;
+  background: linear-gradient(135deg, #eef6ff, #dbeafe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
 }
-@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-.status-badge{
-  position:fixed;top:10px;right:10px;z-index:1000; padding:8px 16px;
-  border-radius:20px;font-size:0.9rem;font-weight:600;
-  background:#d4edda;color:#155724;border:1px solid #c3e6cb;
+
+.thumb::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3));
+  z-index: 2;
 }
-.status-badge.offline{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;}
-.status-badge.connecting{background:#fff3cd;color:#856404;border:1px solid #ffeaa7;}
-.warning-box{
-  background:#fff3cd;color:#856404;border:1px solid #ffeaa7;
-  padding:15px;border-radius:10px;margin:15px 0;text-align:center;
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top; /* Focus sur le visage */
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
-@media(max-width:900px){.grid{grid-template-columns:1fr;}.candidates{grid-template-columns:1fr;}}
-@media(max-width:768px){
-  .hero h1{font-size:2.2rem;}
-  .countdown-grid{gap:10px;}
-  .countdown-value{font-size:2rem;}
-  .hero .meta{flex-direction:column;gap:15px;}
+
+.candidate:hover .thumb img {
+  transform: scale(1.05);
 }
-@media(max-width:480px){
-  .countdown-grid{grid-template-columns:repeat(2,1fr);}
-  .hero h1{font-size:1.8rem;}
+
+/* Assurance que les visages sont toujours entiers */
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.image-container img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+}
+
+/* Badge numéro de candidat */
+.candidate-number {
+  position: absolute;
+  top: clamp(8px, 2vw, 10px);
+  left: clamp(8px, 2vw, 10px);
+  background: var(--accent-1);
+  color: white;
+  width: clamp(32px, 6vw, 36px);
+  height: clamp(32px, 6vw, 36px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  border: 2px solid white;
+}
+
+/* ====== INFO CANDIDAT RESPONSIVE ====== */
+.info {
+  padding: clamp(1rem, 3vw, 1.25rem);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(0.5rem, 2vw, 0.75rem);
+}
+
+.info h3 {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.25rem, 1vw, 0.375rem);
+}
+
+.number-badge {
+  background: var(--accent-1);
+  color: white;
+  padding: clamp(0.25rem, 1vw, 0.375rem) clamp(0.5rem, 2vw, 0.75rem);
+  border-radius: clamp(8px, 2vw, 12px);
+  font-size: clamp(0.75rem, 2vw, 0.9rem);
+  font-weight: 700;
+  display: inline-block;
+  align-self: flex-start;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.votes-badge {
+  font-weight: 700;
+  color: var(--accent-2);
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.votes-badge::before {
+  content: '🎯';
+  font-size: 1.1em;
+}
+
+.votes-badge.animate {
+  transform: scale(1.1);
+  color: var(--accent-3);
+}
+
+/* ====== BOUTONS RESPONSIVE ====== */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: clamp(0.75rem, 2vw, 1rem);
+}
+
+.vote-btn {
+  padding: clamp(0.75rem, 2vw, 0.875rem) clamp(1rem, 3vw, 1.25rem);
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-3));
+  border: none;
+  color: white;
+  font-weight: 700;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  border-radius: clamp(10px, 2vw, 14px);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  max-width: 150px;
+  position: relative;
+  overflow: hidden;
+}
+
+.vote-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s;
+}
+
+.vote-btn:hover::after {
+  left: 100%;
+}
+
+.vote-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.vote-btn:active {
+  transform: translateY(0);
+}
+
+.vote-btn:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ====== CLASSEMENT RESPONSIVE ====== */
+#ranking {
+  margin-top: clamp(1.5rem, 4vw, 2rem);
+}
+
+.ranking-item {
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  padding: clamp(0.75rem, 2vw, 1rem);
+  background: #fff;
+  border-radius: clamp(10px, 2vw, 12px);
+  box-shadow: 0 4px 12px var(--shadow-sm);
+  transition: all 0.3s;
+}
+
+.ranking-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(0.5rem, 2vw, 0.75rem);
+  margin-bottom: clamp(0.5rem, 2vw, 0.625rem);
+}
+
+.ranking-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(28px, 5vw, 32px);
+  height: clamp(28px, 5vw, 32px);
+  background: var(--accent-1);
+  color: white;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  flex-shrink: 0;
+}
+
+.ranking-rank.rank-1 { background: #ffd700; color: #000; }
+.ranking-rank.rank-2 { background: #c0c0c0; color: #000; }
+.ranking-rank.rank-3 { background: #cd7f32; color: #000; }
+
+.ranking-candidate-number {
+  background: var(--accent-2);
+  color: white;
+  padding: clamp(0.125rem, 1vw, 0.1875rem) clamp(0.5rem, 2vw, 0.75rem);
+  border-radius: clamp(6px, 2vw, 8px);
+  font-size: clamp(0.7rem, 2vw, 0.8rem);
+  font-weight: 700;
+}
+
+.ranking-bar-container {
+  width: 100%;
+  height: clamp(10px, 3vw, 14px);
+  background: #e9ecef;
+  border-radius: clamp(6px, 2vw, 8px);
+  overflow: hidden;
+  margin-top: clamp(0.375rem, 1vw, 0.5rem);
+}
+
+.ranking-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
+  border-radius: inherit;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ====== BOUTON ADMIN RESPONSIVE ====== */
+.admin-btn {
+  position: absolute;
+  top: clamp(0.75rem, 3vw, 1.25rem);
+  right: clamp(0.75rem, 3vw, 1.25rem);
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(6px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1.25rem);
+  border-radius: clamp(10px, 2vw, 14px);
+  font-weight: 700;
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 100;
+}
+
+.admin-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
+}
+
+/* ====== MODALS RESPONSIVE ====== */
+#payment-modal,
+#admin-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s;
+  padding: clamp(0.5rem, 3vw, 1rem);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background: white;
+  width: min(450px, 95vw);
+  padding: clamp(1rem, 4vw, 2rem);
+  border-radius: clamp(16px, 3vw, 20px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content h3 {
+  margin-bottom: clamp(1rem, 3vw, 1.5rem);
+  color: var(--accent-2);
+}
+
+.modal-content label {
+  margin-top: clamp(0.75rem, 2vw, 1rem);
+  display: block;
+  font-weight: 600;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+}
+
+.modal-content input,
+.modal-content select {
+  width: 100%;
+  padding: clamp(0.75rem, 2vw, 1rem);
+  border-radius: clamp(8px, 2vw, 10px);
+  border: 2px solid #e2e8f0;
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  transition: border-color 0.3s;
+}
+
+.modal-content input:focus,
+.modal-content select:focus {
+  outline: none;
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px rgba(59, 107, 240, 0.1);
+}
+
+.modal-content button {
+  padding: clamp(0.75rem, 2vw, 1rem) clamp(1rem, 3vw, 1.25rem);
+  width: 100%;
+  border-radius: clamp(10px, 2vw, 14px);
+  border: none;
+  background: var(--accent-2);
+  color: white;
+  font-weight: 700;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: clamp(0.5rem, 2vw, 0.75rem);
+}
+
+.modal-content button:hover {
+  transform: scale(1.02);
+  background: var(--accent-1);
+}
+
+#payment-number {
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  font-weight: 600;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  color: var(--accent-2);
+}
+
+/* ====== SECTION ADMIN RESPONSIVE ====== */
+.admin-section {
+  margin-top: clamp(1rem, 3vw, 1.5rem);
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.admin-card {
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  padding: clamp(0.75rem, 2vw, 1rem);
+  border: 2px solid #e2e8f0;
+  border-radius: clamp(8px, 2vw, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.5rem, 2vw, 0.75rem);
+  transition: all 0.3s;
+}
+
+@media (min-width: 480px) {
+  .admin-card {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.admin-card button {
+  padding: clamp(0.5rem, 2vw, 0.625rem) clamp(0.75rem, 2vw, 1rem);
+  border: none;
+  background: var(--accent-2);
+  color: white;
+  border-radius: clamp(6px, 2vw, 8px);
+  cursor: pointer;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  font-weight: 600;
+  transition: all 0.3s;
+  flex: 1;
+}
+
+@media (min-width: 480px) {
+  .admin-card button {
+    flex: 0;
+    min-width: 80px;
+  }
+}
+
+.admin-card button.reject {
+  background: var(--danger);
+}
+
+.admin-card button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ====== FOOTER RESPONSIVE ====== */
+footer {
+  text-align: center;
+  margin-top: clamp(2rem, 5vw, 3rem);
+  color: var(--muted);
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border-top: 2px solid #e2e8f0;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+}
+
+footer a {
+  color: var(--accent-2);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+footer a:hover {
+  color: var(--accent-1);
+  text-decoration: underline;
+}
+
+/* ====== LOADING STATES ====== */
+.loading {
+  text-align: center;
+  padding: clamp(2rem, 5vw, 3rem);
+  color: var(--muted);
+}
+
+.loading-spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--accent-2);
+  border-radius: 50%;
+  width: clamp(32px, 6vw, 40px);
+  height: clamp(32px, 6vw, 40px);
+  animation: spin 1s linear infinite;
+  margin: 0 auto clamp(1rem, 3vw, 1.5rem);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ====== STATUS BADGE ====== */
+.status-badge {
+  position: fixed;
+  top: clamp(0.5rem, 2vw, 0.75rem);
+  right: clamp(0.5rem, 2vw, 0.75rem);
+  z-index: 1000;
+  padding: clamp(0.5rem, 2vw, 0.625rem) clamp(0.75rem, 2vw, 1rem);
+  border-radius: clamp(16px, 3vw, 20px);
+  font-size: clamp(0.75rem, 2vw, 0.85rem);
+  font-weight: 600;
+  background: #d4edda;
+  color: #155724;
+  border: 2px solid #c3e6cb;
+  backdrop-filter: blur(10px);
+}
+
+.status-badge.offline {
+  background: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+.status-badge.connecting {
+  background: #fff3cd;
+  color: #856404;
+  border-color: #ffeaa7;
+}
+
+/* ====== WARNING BOX ====== */
+.warning-box {
+  background: #fff3cd;
+  color: #856404;
+  border: 2px solid #ffeaa7;
+  padding: clamp(0.75rem, 3vw, 1rem);
+  border-radius: clamp(8px, 2vw, 12px);
+  margin: clamp(0.75rem, 3vw, 1rem) 0;
+  text-align: center;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+}
+
+/* ====== ANIMATIONS SUPPLEMENTAIRES ====== */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+/* ====== TOUCH OPTIMIZATIONS ====== */
+@media (hover: none) {
+  .candidate:hover {
+    transform: none;
+  }
+  
+  .vote-btn:hover {
+    transform: none;
+  }
+  
+  .admin-btn:hover {
+    transform: none;
+  }
+}
+
+/* ====== DARK MODE SUPPORT ====== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --muted: #94a3b8;
+    --shadow-sm: rgba(0, 0, 0, 0.3);
+    --shadow-md: rgba(0, 0, 0, 0.4);
+    --shadow-lg: rgba(0, 0, 0, 0.5);
+    --shadow-xl: rgba(0, 0, 0, 0.6);
+  }
+  
+  body {
+    color: #f1f5f9;
+  }
+  
+  .candidate {
+    background: #1e293b;
+  }
+  
+  .thumb {
+    background: linear-gradient(135deg, #1e40af, #1d4ed8);
+  }
+  
+  .ranking-item {
+    background: #1e293b;
+  }
+  
+  .modal-content {
+    background: #1e293b;
+    color: #f1f5f9;
+  }
+  
+  .modal-content input,
+  .modal-content select {
+    background: #334155;
+    border-color: #475569;
+    color: #f1f5f9;
+  }
+}
+
+/* ====== ORIENTATION SUPPORT ====== */
+@media (orientation: landscape) and (max-height: 600px) {
+  .hero {
+    padding: 1.5rem;
+  }
+  
+  .thumb {
+    height: 180px;
+    min-height: 180px;
+  }
+  
+  .candidate {
+    min-height: 320px;
+  }
+}
+
+/* ====== HIGH-DPI SCREENS ====== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .thumb img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* ====== PRINT STYLES ====== */
+@media print {
+  .admin-btn,
+  .vote-btn,
+  #payment-modal,
+  #admin-panel,
+  .status-badge {
+    display: none !important;
+  }
+  
+  .candidate {
+    break-inside: avoid;
+  }
 }
 </style>
 </head>
@@ -178,11 +847,12 @@ footer{text-align:center;margin-top:40px;color:var(--muted);padding:20px;border-
 
 <div class="page">
 <header class="hero">
-<h1>Miss & Mister AHN 2026</h1>
-<div class="subtitle">Votez pour vos candidats préférés !</div>
+<h1>Miss & Mister AHN 2025</h1>
+<div class="subtitle">Votez pour vos candidats préférés ! Chaque vote compte</div>
 <div class="meta">
-<div> <strong id="candidates-count">0</strong> Candidats</div>
-<div> <strong id="votes-count">0</strong> Votes</div>
+<div>🎭 <strong id="candidates-count">0</strong> Candidats</div>
+<div>🗳️ <strong id="votes-count">0</strong> Votes</div>
+<div>💰 100 FCFA / vote</div>
 </div>
 
 <!-- Compte à rebours -->
@@ -215,27 +885,27 @@ footer{text-align:center;margin-top:40px;color:var(--muted);padding:20px;border-
   La période de vote s'est achevée le 20 décembre 2025 à 21h00
 </div>
 
-<button class="admin-btn"> Admin</button>
+<button class="admin-btn">🔐 Admin</button>
 </header>
 
 <div id="connection-warning" class="warning-box" style="display:none;">
-⚠️ <strong>Mode local activé</strong> - La base de données n'est pas disponible.
+⚠️ <strong>Mode local activé</strong> - Connexion à la base de données indisponible. Les votes seront synchronisés plus tard.
 </div>
 
 <div class="grid">
 <main>
 <div class="card">
-<h2 style="color:var(--accent-2);margin-bottom:12px;">Candidates Miss</h2>
+<h2 style="color:var(--accent-2);margin-bottom:12px;">👑 Candidates Miss</h2>
 <div class="candidates" id="miss-list">
-  <div class="loading"><div class="loading-spinner"></div>Chargement...</div>
+  <div class="loading"><div class="loading-spinner"></div>Chargement des candidates...</div>
 </div>
-<h2 style="color:var(--accent-2);margin-top:32px;margin-bottom:12px;">Candidates Mister</h2>
+<h2 style="color:var(--accent-2);margin-top:32px;margin-bottom:12px;">🤵 Candidates Mister</h2>
 <div class="candidates" id="mister-list">
-  <div class="loading"><div class="loading-spinner"></div>Chargement...</div>
+  <div class="loading"><div class="loading-spinner"></div>Chargement des candidats...</div>
 </div>
-<h2 style="color:var(--accent-3);margin-top:32px;">Classement</h2>
+<h2 style="color:var(--accent-3);margin-top:32px;">🏆 Classement en temps réel</h2>
 <div id="ranking">
-  <div class="loading"><div class="loading-spinner"></div>Chargement...</div>
+  <div class="loading"><div class="loading-spinner"></div>Calcul du classement...</div>
 </div>
 </div>
 </main>
@@ -244,8 +914,8 @@ footer{text-align:center;margin-top:40px;color:var(--muted);padding:20px;border-
 <div>© Comité de Parrainage Arts et Humanités Numériques 2025</div>
 <div style="margin-top:10px;font-size:0.9rem;color:#666;">
   Date limite : 20 décembre 2025 à 21h00 (Heure Cameroun) • 
-  <a href="https://election-mister.onrender.com/api/debug/files" style="color:var(--accent-2);">Vérifier les fichiers</a> • 
-  <a href="https://election-mister.onrender.com/api/fix-images" style="color:var(--accent-2);">Corriger images</a>
+  <a href="https://election-mister.onrender.com/api/debug/files" style="color:var(--accent-2);" target="_blank">📁 Vérifier les fichiers</a> • 
+  <a href="https://election-mister.onrender.com/api/fix-images" style="color:var(--accent-2);" target="_blank">🖼️ Corriger images</a>
 </div>
 </footer>
 </div>
@@ -253,7 +923,7 @@ footer{text-align:center;margin-top:40px;color:var(--muted);padding:20px;border-
 <!-- Payment Modal -->
 <div id="payment-modal">
 <div class="modal-content">
-<h3>Paiement pour le vote</h3>
+<h3>💰 Paiement pour le vote</h3>
 <label>Nombre de votes :</label>
 <input type="number" id="vote-count" min="1" value="1">
 <label>Montant à payer :</label>
@@ -266,23 +936,23 @@ footer{text-align:center;margin-top:40px;color:var(--muted);padding:20px;border-
 </select>
 <div id="payment-number">Numéro Orange Money : #150*46*0761200#</div>
 <label>Code transaction :</label>
-<input type="text" id="payment-code" placeholder="Entrez le code reçu par SMS">
-<button id="submit-payment">Envoyer pour validation</button>
-<button style="background:#eee;color:#333;" onclick="closePaymentModal()">Annuler</button>
+<input type="text" id="payment-code" placeholder="Entrez le code reçu par SMS" autocomplete="off">
+<button id="submit-payment">✅ Envoyer pour validation</button>
+<button style="background:#eee;color:#333;" onclick="closePaymentModal()">❌ Annuler</button>
 </div>
 </div>
 
 <!-- Admin Panel -->
 <div id="admin-panel">
 <div class="modal-content">
-<h2 style="color:var(--accent-2);">Panneau Admin</h2>
+<h2 style="color:var(--accent-2);">🔐 Panneau Admin</h2>
 <label>Mot de passe :</label>
-<input type="password" id="admin-pass">
+<input type="password" id="admin-pass" autocomplete="current-password">
 <button id="admin-login">Se connecter</button>
 <div id="admin-content" style="display:none;">
-<h3 style="margin-top:20px;">Transactions en attente</h3>
+<h3 style="margin-top:20px;">📋 Transactions en attente</h3>
 <div class="admin-section" id="pending-list-section">
-  <div class="loading">Chargement...</div>
+  <div class="loading">Chargement des transactions...</div>
 </div>
 </div>
 <button onclick="closeAdminPanel()" style="margin-top:20px;">Fermer</button>
@@ -314,51 +984,37 @@ function updateCountdown() {
   const timeRemaining = VOTE_DEADLINE - now;
   
   if (timeRemaining <= 0) {
-    // Vote terminé
     voteActive = false;
     document.getElementById('countdown').style.display = 'none';
     document.getElementById('vote-ended').style.display = 'block';
     
-    // Désactiver tous les boutons de vote
     document.querySelectorAll('.vote-btn').forEach(btn => {
       btn.disabled = true;
-      btn.textContent = 'Vote terminé';
-      btn.style.background = '#ccc';
+      btn.textContent = '⏰ Vote terminé';
+      btn.style.background = '#94a3b8';
     });
     
-    // Arrêter l'intervalle
-    if (countdownInterval) {
-      clearInterval(countdownInterval);
-    }
-    
+    if (countdownInterval) clearInterval(countdownInterval);
     return;
   }
   
-  // Calculer jours, heures, minutes, secondes
   const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
   const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
   
-  // Mettre à jour l'affichage
   document.getElementById('countdown-days').textContent = days.toString().padStart(2, '0');
   document.getElementById('countdown-hours').textContent = hours.toString().padStart(2, '0');
   document.getElementById('countdown-minutes').textContent = minutes.toString().padStart(2, '0');
   document.getElementById('countdown-seconds').textContent = seconds.toString().padStart(2, '0');
   
-  // Animation pour les secondes
   const secondsElement = document.getElementById('countdown-seconds');
   secondsElement.style.transform = 'scale(1.1)';
-  setTimeout(() => {
-    secondsElement.style.transform = 'scale(1)';
-  }, 300);
+  setTimeout(() => secondsElement.style.transform = 'scale(1)', 300);
 }
 
 function startCountdown() {
-  // Mettre à jour immédiatement
   updateCountdown();
-  
-  // Puis mettre à jour toutes les secondes
   countdownInterval = setInterval(updateCountdown, 1000);
 }
 
@@ -368,14 +1024,12 @@ function startCountdown() {
 function extractCandidateNumber(candidateId) {
   if (!candidateId) return '?';
   const matches = candidateId.match(/\d+/g);
-  if (matches && matches.length > 0) return matches[matches.length - 1];
-  const lastDigit = candidateId.match(/\d$/);
-  return lastDigit ? lastDigit[0] : '?';
+  return matches && matches.length > 0 ? matches[matches.length - 1] : '?';
 }
 
 async function fetchAPI(endpoint, options = {}) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
   
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -420,7 +1074,7 @@ function updateConnectionStatus(connected) {
   
   if (connected) {
     badge.className = 'status-badge';
-    badge.textContent = '✓ Connecté';
+    badge.textContent = '✅ Connecté';
     warning.style.display = 'none';
   } else {
     badge.className = 'status-badge offline';
@@ -430,7 +1084,7 @@ function updateConnectionStatus(connected) {
 }
 
 // ============================
-// CHARGEMENT ET AFFICHAGE
+// CHARGEMENT ET AFFICHAGE OPTIMISÉ
 // ============================
 async function loadCandidates() {
   try {
@@ -438,32 +1092,12 @@ async function loadCandidates() {
     
     if (isConnected) {
       allCandidates = await fetchAPI('/candidates');
-      console.log('Candidats chargés:', allCandidates);
+      console.log('Candidats chargés:', allCandidates.length);
       
-      // Tester les images
-      console.log('🔍 Test des images:');
-      allCandidates.forEach(candidate => {
-        if (candidate.img) {
-          // Corriger le chemin si nécessaire
-          let imgPath = candidate.img;
-          if (imgPath.startsWith('Photo/')) {
-            imgPath = imgPath.replace('Photo/', '');
-            console.log(`  Correction: ${candidate.img} -> ${imgPath}`);
-          }
-          
-          const imgUrl = IMAGES_BASE_PATH + imgPath;
-          console.log(`  ${candidate.nom}: ${imgUrl}`);
-          
-          // Précharger
-          const img = new Image();
-          img.onload = () => console.log(`    ✅ Chargée`);
-          img.onerror = () => console.log(`    ❌ Erreur`);
-          img.src = imgUrl;
-        }
-      });
+      // Optimisation des images
+      preloadCandidateImages();
       
-      await loadStats();
-      await loadRanking();
+      await Promise.all([loadStats(), loadRanking()]);
     } else {
       const saved = localStorage.getItem('ahn_candidates');
       allCandidates = saved ? JSON.parse(saved) : [];
@@ -483,6 +1117,21 @@ async function loadCandidates() {
   }
 }
 
+function preloadCandidateImages() {
+  // Préchargement intelligent des images
+  allCandidates.forEach(candidate => {
+    if (candidate.img) {
+      let imgPath = candidate.img.startsWith('Photo/') 
+        ? candidate.img.replace('Photo/', '') 
+        : candidate.img;
+      
+      const imgUrl = IMAGES_BASE_PATH + imgPath;
+      const img = new Image();
+      img.src = imgUrl;
+    }
+  });
+}
+
 function displayCandidates() {
   document.getElementById('candidates-count').textContent = allCandidates.length;
   
@@ -495,7 +1144,7 @@ function displayCandidates() {
   missList.innerHTML = missCandidates.map(createCandidateCard).join('');
   misterList.innerHTML = misterCandidates.map(createCandidateCard).join('');
   
-  // Ajouter les événements
+  // Ajout des événements avec délai pour performance
   setTimeout(() => {
     document.querySelectorAll('.vote-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -503,16 +1152,16 @@ function displayCandidates() {
           alert('⏰ Les votes sont terminés !\nLa période de vote s\'est achevée le 20 décembre 2025 à 21h00.');
           return;
         }
-        openPaymentModal(e.target.getAttribute('data-id'));
+        openPaymentModal(e.target.closest('.candidate').getAttribute('data-id'));
       });
     });
-  }, 100);
+  }, 50);
 }
 
 function createCandidateCard(candidate) {
   const candidateNumber = candidate.candidate_number || extractCandidateNumber(candidate.id);
   
-  // CORRECTION DES CHEMINS D'IMAGES
+  // Correction du chemin d'image
   let imageFilename = candidate.img || '';
   if (imageFilename.startsWith('Photo/')) {
     imageFilename = imageFilename.replace('Photo/', '');
@@ -522,32 +1171,31 @@ function createCandidateCard(candidate) {
   const candidateName = candidate.nom || 'Candidat';
   const initials = candidateName.split(' ').map(w => w[0]).join('').toUpperCase().substr(0, 2);
   
-  // URL de secours (avatar avec initiales)
-  const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(candidateName)}&background=3b6bf0&color=fff&bold=true&size=300`;
+  // Avatar de secours optimisé
+  const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(candidateName)}&background=3b6bf0&color=fff&bold=true&length=2&size=300`;
   
   return `
-    <div class="candidate">
+    <div class="candidate" data-id="${candidate.id}">
       <div class="candidate-number">${candidateNumber}</div>
       <div class="thumb">
-        <img src="${imageUrl || fallbackUrl}" 
-             alt="${candidateName}"
-             onerror="
-               if (this.src !== '${fallbackUrl}') {
-                 this.src = '${fallbackUrl}';
-               }
-             "
-             loading="lazy">
+        <div class="image-container">
+          <img src="${imageUrl || fallbackUrl}" 
+               alt="Photo de ${candidateName}"
+               loading="lazy"
+               decoding="async"
+               onerror="this.onerror=null; this.src='${fallbackUrl}'">
+        </div>
       </div>
       <div class="info">
         <h3>
           <span class="number-badge">Candidat N°${candidateNumber}</span>
           ${candidateName}
         </h3>
-        <div class="votes-badge" data-votes-id="${candidate.id}">Votes: ${candidate.votes || 0}</div>
+        <div class="votes-badge" data-votes-id="${candidate.id}">${candidate.votes || 0} votes</div>
       </div>
       <div class="actions">
-        <button class="vote-btn" data-id="${candidate.id}" ${!voteActive ? 'disabled' : ''}>
-          ${voteActive ? 'Voter' : 'Vote terminé'}
+        <button class="vote-btn" ${!voteActive ? 'disabled' : ''}>
+          ${voteActive ? '🗳️ Voter' : '⏰ Terminé'}
         </button>
       </div>
     </div>
@@ -604,10 +1252,10 @@ function displayRanking(ranking) {
             <span class="ranking-rank ${c.rank_position <= 3 ? 'rank-' + c.rank_position : ''}">
               ${c.rank_position}
             </span>
-            <span class="ranking-candidate-number">Candidat N°${c.candidate_number}</span>
+            <span class="ranking-candidate-number">N°${c.candidate_number}</span>
             <strong>${c.nom}</strong>
             <span style="margin-left:auto;color:var(--accent-2);font-weight:bold;">
-              ${c.votes || 0} vote(s)
+              ${c.votes || 0} votes
             </span>
           </div>
           <div class="ranking-bar-container">
@@ -622,7 +1270,7 @@ function displayRanking(ranking) {
 }
 
 // ============================
-// GESTION DES VOTES
+// GESTION DES VOTES OPTIMISÉE
 // ============================
 async function checkTransactionCode(code) {
   if (!code || !isDatabaseConnected) return { exists: false };
@@ -646,6 +1294,7 @@ function openPaymentModal(candidateId) {
   document.getElementById('payment-amount').value = PRICE_PER_VOTE + ' FCFA';
   updatePaymentNumber();
   document.getElementById('payment-modal').style.display = 'flex';
+  document.getElementById('payment-code').focus();
 }
 
 function closePaymentModal() {
@@ -656,6 +1305,7 @@ function closePaymentModal() {
 document.getElementById('vote-count').addEventListener('input', function() {
   let count = parseInt(this.value) || 1;
   if (count < 1) count = 1;
+  if (count > 100) count = 100;
   this.value = count;
   document.getElementById('payment-amount').value = (count * PRICE_PER_VOTE) + " FCFA";
 });
@@ -691,7 +1341,7 @@ document.getElementById('submit-payment').addEventListener('click', async functi
   const candidate = allCandidates.find(c => c.id === currentCandidateId);
   if (!candidate) return alert('Erreur: Candidat introuvable');
   
-  // Vérifier si le code existe déjà
+  // Vérification du code
   if (isDatabaseConnected) {
     const checkResult = await checkTransactionCode(code);
     if (checkResult.exists) {
@@ -752,7 +1402,7 @@ function saveVoteLocally(voteData, candidate) {
   
   const votesBadge = document.querySelector(`[data-votes-id="${candidate.id}"]`);
   if (votesBadge) {
-    votesBadge.textContent = `Votes: ${candidate.votes}`;
+    votesBadge.textContent = `${candidate.votes} votes`;
     votesBadge.classList.add('animate');
     setTimeout(() => votesBadge.classList.remove('animate'), 600);
   }
@@ -761,7 +1411,7 @@ function saveVoteLocally(voteData, candidate) {
   updateTotalVotes();
   updateRanking();
   closePaymentModal();
-  alert('✅ Vote enregistré localement!');
+  alert('✅ Vote enregistré localement! Il sera synchronisé lorsque la connexion sera rétablie.');
 }
 
 // ============================
@@ -769,6 +1419,7 @@ function saveVoteLocally(voteData, candidate) {
 // ============================
 document.querySelector('.admin-btn').addEventListener('click', () => {
   document.getElementById('admin-panel').style.display = 'flex';
+  document.getElementById('admin-pass').focus();
 });
 
 function closeAdminPanel() {
@@ -853,9 +1504,9 @@ function displayTransactions(transactions, fromAPI = true) {
             Code: <strong>${t.code_transaction || t.transaction_code || 'N/A'}</strong><br>
             <small>${new Date(t.created_at).toLocaleString()}</small>
           </div>
-          <div>
-            <button onclick="${apiCall}(${transactionId})">Valider</button>
-            <button class="reject" onclick="${rejectCall}(${transactionId})">Rejeter</button>
+          <div style="display:flex;gap:0.5rem;">
+            <button onclick="${apiCall}(${transactionId})">✅ Valider</button>
+            <button class="reject" onclick="${rejectCall}(${transactionId})">❌ Rejeter</button>
           </div>
         </div>
       `;
@@ -913,7 +1564,7 @@ function rejectLocalTransaction(index) {
     if (candidate) {
       candidate.votes = Math.max(0, (candidate.votes || 0) - (transaction.vote_count || 1));
       const votesBadge = document.querySelector(`[data-votes-id="${candidate.id}"]`);
-      if (votesBadge) votesBadge.textContent = `Votes: ${candidate.votes}`;
+      if (votesBadge) votesBadge.textContent = `${candidate.votes} votes`;
     }
     pendingTransactions.splice(index, 1);
     saveLocalData();
@@ -938,41 +1589,64 @@ function saveLocalData() {
 }
 
 // ============================
-// INITIALISATION
+// INITIALISATION OPTIMISÉE
 // ============================
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log('🚀 Démarrage...');
+  console.log('🚀 Démarrage application...');
   console.log(`🌐 API: ${API_BASE_URL}`);
   console.log(`🖼️ Images: ${IMAGES_BASE_PATH}`);
-  console.log(`⏰ Date limite: ${VOTE_DEADLINE.toLocaleString('fr-FR')}`);
+  console.log(`⏰ Date limite: ${VOTE_DEADLINE.toLocaleString('fr-FR', { timeZone: 'Africa/Douala' })}`);
   
   // Démarrer le compte à rebours
   startCountdown();
   
-  // Tester une image
-  const testImg = new Image();
-  testImg.onload = () => console.log('✅ Test image chargée');
-  testImg.onerror = () => console.log('❌ Test image échouée');
-  testImg.src = IMAGES_BASE_PATH + 'miss_1.jpg';
+  // Optimisation pour mobile
+  if ('connection' in navigator) {
+    console.log(`📶 Connexion: ${navigator.connection.effectiveType}`);
+  }
   
+  // Chargement initial
   loadLocalTransactions();
   await loadCandidates();
   
-  // Vérifier périodiquement la connexion
+  // Vérification périodique
   setInterval(async () => {
     await testConnection();
   }, 30000);
+  
+  // Gestion du clavier mobile
+  window.addEventListener('resize', () => {
+    if (window.innerHeight < 500) {
+      document.body.classList.add('keyboard-open');
+    } else {
+      document.body.classList.remove('keyboard-open');
+    }
+  });
 });
 
-window.addEventListener('online', async () => {
-  console.log('Connexion rétablie...');
-  const wasConnected = isDatabaseConnected;
-  await testConnection();
+// Synchronisation quand la connexion revient
+let connectionCheck;
+window.addEventListener('online', () => {
+  console.log('📱 Connexion rétablie');
   
-  if (isDatabaseConnected && !wasConnected && pendingTransactions.length > 0) {
-    if (confirm('Connexion rétablie ! Synchroniser les votes locaux ?')) {
-      alert(`${pendingTransactions.length} votes à synchroniser.`);
+  if (connectionCheck) clearTimeout(connectionCheck);
+  connectionCheck = setTimeout(async () => {
+    const wasConnected = isDatabaseConnected;
+    await testConnection();
+    
+    if (isDatabaseConnected && !wasConnected && pendingTransactions.length > 0) {
+      if (confirm('Connexion rétablie ! Synchroniser les votes locaux ?')) {
+        alert(`${pendingTransactions.length} votes à synchroniser.`);
+      }
     }
+  }, 2000);
+});
+
+// Prévenir la fermeture accidentelle
+window.addEventListener('beforeunload', (e) => {
+  if (pendingTransactions.length > 0) {
+    e.preventDefault();
+    e.returnValue = 'Vous avez des votes non synchronisés. Êtes-vous sûr de vouloir quitter ?';
   }
 });
 </script>
