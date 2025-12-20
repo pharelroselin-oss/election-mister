@@ -22,8 +22,8 @@ DATABASE_URL = os.getenv('DATABASE_URL',
     'postgresql://election_user:uIvD4UaRMcqngNl3Re643KySUFvhnRF0@dpg-d4tf1uchg0os73ct4gi0-a.oregon-postgres.render.com/election_k6jj'
 )
 
-# Date limite du vote (20 décembre 2025, 22h30, heure du Cameroun - UTC+1)
-VOTE_DEADLINE = datetime(2025, 12, 20, 22, 30, 0)  # 22h30 heure Cameroun
+# Date limite du vote (21 décembre 2025, 00h15, heure du Cameroun - UTC+1)
+VOTE_DEADLINE = datetime(2025, 12, 21, 00, 15, 0)  # 00h15 heure Cameroun
 
 # ========== FONCTION D'INITIALISATION ==========
 def init_database():
