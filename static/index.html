@@ -940,7 +940,7 @@ footer a:hover {
 
 <div id="vote-ended" class="vote-ended" style="display:none;">
   ⏰ <strong>LES VOTES SONT TERMINÉS</strong><br>
-  La période de vote s'est achevée le 20 décembre 2025 à 21h00
+  La période de vote s'est achevée le 20 décembre 2025 à 22h30
 </div>
 
 <button class="admin-btn">🔐 Admin</button>
@@ -989,7 +989,7 @@ footer a:hover {
 <footer>
 <div>© Comité de Parrainage Arts et Humanités Numériques 2030</div>
 <div style="margin-top:10px;font-size:0.9rem;color:#666;">
-  Date limite : 20 décembre 2025 à 21h00 (Heure Cameroun)
+  Date limite : 20 décembre 2025 à 22h30 (Heure Cameroun)
 </footer>
 </div>
 
@@ -1036,7 +1036,7 @@ footer a:hover {
 const API_BASE_URL = window.location.origin + '/api';
 const IMAGES_BASE_PATH = '/static/photo/';
 const PRICE_PER_VOTE = 100;
-const VOTE_DEADLINE = new Date('2025-12-20T22:30:00+01:00'); // 21h00 Cameroun (UTC+1)
+const VOTE_DEADLINE = new Date('2025-12-20T22:30:00+01:00'); // 22h30 Cameroun (UTC+1)
 
 let allCandidates = [];
 let pendingTransactions = [];
@@ -1219,7 +1219,7 @@ function displayCandidates() {
     document.querySelectorAll('.vote-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         if (!voteActive) {
-          alert('⏰ Les votes sont terminés !\nLa période de vote s\'est achevée le 20 décembre 2025 à 21h00.');
+          alert('⏰ Les votes sont terminés !\nLa période de vote s\'est achevée le 20 décembre 2025 à 22h30.');
           return;
         }
         openPaymentModal(e.target.closest('.candidate').getAttribute('data-id'));
@@ -1445,7 +1445,7 @@ async function checkTransactionCode(code) {
 
 function openPaymentModal(candidateId) {
   if (!voteActive) {
-    alert('⏰ Les votes sont terminés !\nLa période de vote s\'est achevée le 20 décembre 2025 à 21h00.');
+    alert('⏰ Les votes sont terminés !\nLa période de vote s\'est achevée le 20 décembre 2025 à 22h30.');
     return;
   }
   
@@ -1503,7 +1503,7 @@ document.getElementById('payment-method').addEventListener('change', updatePayme
 
 document.getElementById('submit-payment').addEventListener('click', async function() {
   if (!voteActive) {
-    alert('⏰ Les votes sont terminés !\nLa période de vote s\'est achevée le 20 décembre 2025 à 21h00.');
+    alert('⏰ Les votes sont terminés !\nLa période de vote s\'est achevée le 20 décembre 2025 à 22h30.');
     closePaymentModal();
     return;
   }
